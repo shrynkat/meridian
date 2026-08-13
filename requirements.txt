@@ -1,0 +1,2 @@
+# Phase 0: environment verification only.
+# Later phases add duckdb, dbt-core, dbt-duckdb, streamlit, sqlglot, etc.

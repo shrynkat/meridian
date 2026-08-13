@@ -1,0 +1,25 @@
+# Python virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# DuckDB warehouse files
+*.duckdb
+*.duckdb.wal
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# Environment / secrets
+.env
+profiles.yml
+
+# OS clutter
+.DS_Store
+
+# Editor
+.vscode/
