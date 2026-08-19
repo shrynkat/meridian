@@ -1,2 +1,5 @@
-# Phase 0: environment verification only.
-# Later phases add duckdb, dbt-core, dbt-duckdb, streamlit, sqlglot, etc.
+# Meridian — Python dependencies
+# Phase 1: synthetic data generation
+
+faker==40.36.0
+pandas==3.0.5
