@@ -11,5 +11,6 @@ sources:
       - name: customers
       - name: products
       - name: orders
+      - name: order_items
       - name: events
       - name: reviews

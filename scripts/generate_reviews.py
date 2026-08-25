@@ -64,8 +64,12 @@ def load_parents() -> tuple[list[str], list[str], set[tuple[str, str]]]:
     customers = pd.read_csv(RAW_DIR / "customers.csv")
     products = pd.read_csv(RAW_DIR / "products.csv")
     orders = pd.read_csv(RAW_DIR / "orders.csv")
+    items = pd.read_csv(RAW_DIR / "order_items.csv")
 
-    purchased = set(zip(orders["customer_id"], orders["product_id"]))
+    # customer_id lives on the order header, product_id on the line item,
+    # so the purchased pairs come from joining the two.
+    merged = items.merge(orders[["order_id", "customer_id"]], on="order_id")
+    purchased = set(zip(merged["customer_id"], merged["product_id"]))
     return list(customers["customer_id"]), list(products["product_id"]), purchased
 
 

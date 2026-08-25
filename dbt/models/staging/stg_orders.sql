@@ -1,14 +1,14 @@
--- Silver: orders cleaned, deduplicated, and conformed.
+-- Silver: order headers, cleaned and deduplicated. One row per order.
+--
+-- GRAIN: one row per order_id. Product and quantity now live on
+-- stg_order_items. Summing order_total here gives total revenue;
+-- summing it after joining to line items double-counts.
 --
 -- Rejection policy:
---   quarantined  orphan customer_id, orphan product_id, null quantity
---                (rows that break attribution or arithmetic)
---   flagged      extreme quantity, order predating customer signup
---                (rows that are improbable but real)
---   deduplicated duplicate order_id (identical copies, keep one)
---
--- quarantine/rejected_orders.sql selects the inverse of the exclusions
--- below, so every source row lands in exactly one of the two models.
+--   quarantined  orphan customer_id (breaks attribution)
+--   flagged      order predating signup, total disagreeing with lines,
+--                order with no line items
+--   deduplicated duplicate order_id
 
 with source as (
 
@@ -23,23 +23,17 @@ customers as (
 
 ),
 
-products as (
-
-    select product_id from {{ ref('stg_products') }}
-
-),
-
 typed as (
 
     select
-        trim(order_id)                          as order_id,
-        trim(customer_id)                       as customer_id,
-        trim(product_id)                        as product_id,
-        try_cast(quantity as integer)           as quantity,
-        try_cast(unit_price as decimal(12, 2))  as unit_price,
-        try_cast(order_total as decimal(14, 2)) as order_total,
-        try_cast(order_ts as timestamp)         as order_ts,
-        lower(trim(status))                     as status,
+        trim(order_id)                           as order_id,
+        trim(customer_id)                        as customer_id,
+        try_cast(order_ts as timestamp)          as order_ts,
+        lower(trim(status))                      as status,
+        try_cast(item_count as integer)          as item_count,
+        try_cast(order_total as decimal(14, 2))  as order_total,
+        lower(trim(shipping_method))             as shipping_method,
+        try_cast(shipping_cost as decimal(8, 2)) as shipping_cost,
         _loaded_at,
         _source_file
     from source
@@ -48,9 +42,6 @@ typed as (
 
 deduplicated as (
 
-    -- Duplicate order_ids are byte-identical copies of the same order.
-    -- row_number over the id keeps exactly one. Ordering by _loaded_at
-    -- makes the choice deterministic rather than arbitrary.
     select *
     from (
         select
@@ -65,54 +56,71 @@ deduplicated as (
 
 ),
 
+-- Aggregate the line items so the header can be reconciled against them.
+-- This is the only way to catch a header total that disagrees with its
+-- children: no single-table constraint can express it.
+line_totals as (
+
+    select
+        order_id,
+        count(*)        as actual_line_count,
+        sum(line_total) as actual_line_total
+    from {{ ref('stg_order_items') }}
+    group by order_id
+
+),
+
 validated as (
 
     select
         o.order_id,
         o.customer_id,
-        o.product_id,
-        o.quantity,
-        o.unit_price,
-        o.order_total,
         o.order_ts,
+        o.order_ts::date as order_date,
         o.status,
+        o.item_count,
+        o.order_total,
+        o.shipping_method,
+        o.shipping_cost,
 
-        -- Derived: recompute the total so downstream models can compare
-        -- it against the source value rather than trusting either blindly.
-        round(o.unit_price * o.quantity, 2) as computed_total,
+        coalesce(l.actual_line_count, 0) as actual_line_count,
+        l.actual_line_total,
 
-        -- Flags: kept, not rejected.
-        coalesce(o.quantity > 100, false)             as is_outlier_quantity,
+        -- Flags
         coalesce(o.order_ts::date < c.signup_date, false) as is_before_signup,
+        l.order_id is null                                as has_no_line_items,
+        coalesce(
+            abs(o.order_total - l.actual_line_total) > 0.01,
+            false
+        ) as is_total_mismatched,
 
-        -- Validity components, used here and inverted in quarantine.
         c.customer_id is not null as has_valid_customer,
-        p.product_id is not null  as has_valid_product,
 
         o._loaded_at,
         o._source_file
 
     from deduplicated o
-    left join customers c on o.customer_id = c.customer_id
-    left join products  p on o.product_id  = p.product_id
+    left join customers   c on o.customer_id = c.customer_id
+    left join line_totals l on o.order_id    = l.order_id
 
 )
 
 select
     order_id,
     customer_id,
-    product_id,
-    quantity,
-    unit_price,
-    order_total,
-    computed_total,
     order_ts,
+    order_date,
     status,
-    is_outlier_quantity,
+    item_count,
+    actual_line_count,
+    order_total,
+    actual_line_total,
+    shipping_method,
+    shipping_cost,
     is_before_signup,
+    has_no_line_items,
+    is_total_mismatched,
     _loaded_at,
     _source_file
 from validated
 where has_valid_customer
-  and has_valid_product
-  and quantity is not null

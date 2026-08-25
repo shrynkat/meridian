@@ -89,3 +89,13 @@ DEFECT_RATES_REVIEWS = {
     "unverified_purchase": 0.08,
     "duplicate_text": 0.02,
 }
+
+
+# Line-item defect rates. Added when orders were split into headers and
+# line items — these exercise the parent/child seam specifically.
+DEFECT_RATES_ORDERS.update({
+    "total_mismatch": 0.01,
+    "duplicate_product_line": 0.004,
+    "orphan_order_line": 0.002,
+    "order_without_items": 0.003,
+})

@@ -76,7 +76,7 @@ def load_jsonl(con: duckdb.DuckDBPyConnection, table: str, filename: str) -> Non
 
 def summarize(con: duckdb.DuckDBPyConnection) -> None:
     """Print row counts and confirm the defects survived the load."""
-    tables = ["customers", "products", "orders", "events", "reviews"]
+    tables = ["customers", "products", "orders", "order_items", "events", "reviews"]
 
     print("\nrow counts")
     for table in tables:
@@ -115,7 +115,32 @@ def summarize(con: duckdb.DuckDBPyConnection) -> None:
         ),
         (
             "null quantities",
-            "SELECT count(*) FROM bronze.orders WHERE quantity IS NULL",
+            "SELECT count(*) FROM bronze.order_items WHERE quantity IS NULL",
+        ),
+        (
+            "orphan item orders",
+            """SELECT count(*) FROM bronze.order_items i
+               LEFT JOIN bronze.orders o USING (order_id)
+               WHERE o.order_id IS NULL""",
+        ),
+        (
+            "orders without items",
+            """SELECT count(*) FROM (
+                   SELECT o.order_id FROM bronze.orders o
+                   LEFT JOIN bronze.order_items i USING (order_id)
+                   WHERE i.order_id IS NULL
+               )""",
+        ),
+        (
+            "header/line total mismatch",
+            """SELECT count(*) FROM (
+                   SELECT o.order_id
+                   FROM bronze.orders o
+                   JOIN bronze.order_items i USING (order_id)
+                   GROUP BY o.order_id, o.order_total
+                   HAVING abs(CAST(o.order_total AS DOUBLE)
+                              - sum(CAST(i.line_total AS DOUBLE))) > 0.01
+               )""",
         ),
         (
             "orphan order customers",
@@ -146,6 +171,7 @@ def main() -> None:
     load_csv(con, "customers", "customers.csv")
     load_csv(con, "products", "products.csv")
     load_csv(con, "orders", "orders.csv")
+    load_csv(con, "order_items", "order_items.csv")
     load_csv(con, "reviews", "reviews.csv")
     load_jsonl(con, "events", "events.jsonl")
 
