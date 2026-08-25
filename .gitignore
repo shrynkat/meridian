@@ -26,3 +26,10 @@ profiles.yml
 
 # Generated data (regenerable from scripts/generate_data.py)
 data/
+
+# dbt local state (machine-specific telemetry id)
+.user.yml
+
+# DuckDB profiles hold no credentials, only a local file path.
+# Committing this one makes the repo clone-and-run.
+!dbt/profiles.yml

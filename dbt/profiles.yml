@@ -1,0 +1,7 @@
+meridian:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ../meridian.duckdb
+      threads: 4
