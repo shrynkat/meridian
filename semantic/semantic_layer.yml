@@ -1,0 +1,457 @@
+# Meridian semantic layer
+#
+# Describes what the gold tables MEAN, not what shape they are. The schema
+# already carries types and keys; this file carries the things a schema
+# cannot express — which table answers which question, what a measure
+# includes, and which operations produce wrong answers.
+#
+# This file is the context handed to the text-to-SQL agent in phase 6. It is
+# also the specification the template agent in phase 5 is built against, so
+# both agents work from the same definitions and their results are comparable.
+
+version: 1
+
+warehouse:
+  name: meridian
+  engine: duckdb
+  dialect_notes: >
+    DuckDB SQL. Supports FILTER (WHERE ...) on aggregates, QUALIFY, and
+    date_trunc / date_diff. Prefer FILTER over CASE WHEN inside aggregates.
+    String comparison is case-sensitive.
+
+# ---------------------------------------------------------------------------
+# Defaults: how to resolve an ambiguous question
+# ---------------------------------------------------------------------------
+
+defaults:
+
+  revenue_measure: net_revenue_ex_outliers
+  revenue_rationale: >
+    Cancelled and returned orders never produced money, so excluding them is
+    correctness rather than preference. Excluding outlier quantities is a
+    judgement call: 452 line items (0.2% of rows) carry roughly 85% of raw
+    revenue because their quantities were recorded as 500-9999 units. A
+    default that lets 0.2% of rows drive 85% of the headline figure will
+    mislead more often than it informs. Callers who want those lines
+    included should use net_revenue or gross_revenue, which are named
+    explicitly for that purpose.
+
+  date_column: order_date
+  date_grain: day
+  currency: USD
+
+  answer_requirements:
+    - Every revenue answer MUST state which measure was used.
+    - >
+      If a question is ambiguous about which measure or which grain applies,
+      say so and state the assumption made. Do not resolve the ambiguity
+      silently.
+    - >
+      If a question cannot be answered from these tables, say so rather than
+      approximating with a different measure.
+
+# ---------------------------------------------------------------------------
+# Tables
+# ---------------------------------------------------------------------------
+
+tables:
+
+  - name: gold.fct_orders
+    grain: one row per order_id
+    description: >
+      Order headers. This is the table for counting orders, computing average
+      order value, and analysing order status or shipping method.
+    answers_questions:
+      - how many orders were placed
+      - average order value
+      - order status breakdown
+      - shipping method mix
+      - orders per customer
+    does_not_answer:
+      - which products were bought (product_id is not on this table)
+      - units sold (quantity lives on fct_order_items)
+    columns:
+      order_id:
+        type: varchar
+        description: Primary key. Unique.
+      customer_id:
+        type: varchar
+        description: Foreign key to dim_customers.
+      order_date:
+        type: date
+        description: Date the order was placed. Use this for time filters.
+      order_month:
+        type: date
+        description: First day of the order's month. Pre-computed for monthly grouping.
+      status:
+        type: varchar
+        allowed_values: [delivered, shipped, processing, cancelled, returned]
+        description: >
+          Order state. 'cancelled' and 'returned' orders produced no revenue.
+      is_completed:
+        type: boolean
+        description: >
+          True when status is not cancelled or returned. Use this rather than
+          re-deriving the status filter.
+      order_total:
+        type: decimal
+        description: >
+          Header total as recorded by the source system. CAUTION - this
+          disagrees with the sum of the order's line items on 6,365 orders
+          (~6%), because line quantities were modified without recomputing
+          headers. Prefer actual_line_total for revenue.
+      actual_line_total:
+        type: decimal
+        description: Sum of this order's line items. More reliable than order_total.
+      item_count:
+        type: integer
+        description: Number of line items as recorded on the header.
+      shipping_cost:
+        type: decimal
+      is_total_mismatched:
+        type: boolean
+        description: Header total disagrees with sum of lines. ~6,365 orders.
+    caution: >
+      Do NOT sum order_total after joining to fct_order_items or
+      obt_order_items. The join repeats the header total once per line item,
+      inflating the result by roughly the average basket size (2.35x).
+
+  - name: gold.fct_order_items
+    grain: one row per order_item_id
+    description: >
+      Order line items. This is the table for product-level revenue, units
+      sold, and basket analysis. An order appears here once per product.
+    answers_questions:
+      - revenue by product or category
+      - units sold
+      - which products are bought together
+      - average basket size
+      - best and worst selling products
+    columns:
+      order_item_id:
+        type: varchar
+        description: Primary key. Unique.
+      order_id:
+        type: varchar
+        description: Foreign key to fct_orders. NOT unique on this table.
+      product_id:
+        type: varchar
+        description: Foreign key to dim_products.
+      customer_id:
+        type: varchar
+        description: Denormalised from the order header for convenience.
+      quantity:
+        type: integer
+      unit_price:
+        type: decimal
+      line_total:
+        type: decimal
+        description: >
+          quantity * unit_price. Summing this gives GROSS revenue including
+          outlier quantities.
+      line_total_ex_outliers:
+        type: decimal
+        description: >
+          line_total with outlier-quantity lines zeroed. Summing this gives
+          revenue that a handful of thousand-unit lines cannot dominate.
+          This is the default revenue measure when combined with an
+          is_completed filter.
+      is_outlier_quantity:
+        type: boolean
+        description: >
+          Quantity exceeds 100 units on a single line. 452 such rows exist and
+          they carry ~85% of raw revenue. Almost always worth excluding.
+      is_completed:
+        type: boolean
+        description: Parent order is not cancelled or returned.
+    caution: >
+      (order_id, product_id) is NOT a unique key — the same product can appear
+      twice on one order (1,834 such lines). Only order_item_id is unique.
+
+  - name: gold.dim_customers
+    grain: one row per customer_id
+    description: >
+      Customer dimension with lifetime aggregates already computed. Prefer
+      these pre-computed columns over re-aggregating from the fact tables.
+    answers_questions:
+      - customer lifetime value
+      - top customers by revenue
+      - customer counts by segment, state, or city
+      - repeat versus one-time customers
+      - customer tenure and recency
+    columns:
+      customer_id:
+        type: varchar
+        description: Primary key.
+      segment:
+        type: varchar
+        allowed_values: [consumer, business]
+      city:
+        type: varchar
+        description: Nullable. 509 customers have no city recorded.
+      state:
+        type: varchar
+        description: Two-letter US state code.
+      signup_date:
+        type: date
+      total_orders:
+        type: integer
+      gross_revenue:
+        type: decimal
+        description: Sum of order_total across all orders, any status.
+      net_revenue:
+        type: decimal
+        description: Excludes cancelled and returned orders. Includes outliers.
+      net_revenue_ex_outliers:
+        type: decimal
+        description: >
+          DEFAULT REVENUE MEASURE. Excludes cancelled and returned orders and
+          excludes outlier-quantity line items.
+      gross_revenue_ex_outliers:
+        type: decimal
+        description: All statuses, outlier lines excluded.
+      line_revenue:
+        type: decimal
+        description: >
+          Sum of this customer's line items, all statuses, outliers included.
+          Reconciles exactly with fct_order_items.
+      avg_order_value:
+        type: decimal
+        description: >
+          Net revenue divided by completed order count. NULL for customers
+          with no completed orders — an average over zero orders is undefined,
+          not zero. Filter out nulls before averaging this column.
+      return_rate:
+        type: double
+        description: Returned orders as a fraction of total orders. Null if no orders.
+      is_repeat_customer:
+        type: boolean
+        description: Five or more orders.
+      has_never_ordered:
+        type: boolean
+
+  - name: gold.dim_products
+    grain: one row per product_id
+    description: Product catalog with sales and review aggregates.
+    answers_questions:
+      - best selling products
+      - revenue and profit by product or category
+      - product ratings
+      - products that have never sold
+    columns:
+      product_id:
+        type: varchar
+        description: Primary key.
+      product_name:
+        type: varchar
+      category:
+        type: varchar
+        allowed_values:
+          - Electronics
+          - Home & Kitchen
+          - Apparel
+          - Sports & Outdoors
+          - Books
+          - Beauty
+        description: Nullable. 15 products have no category.
+      price:
+        type: decimal
+        description: Current list price.
+      cost:
+        type: decimal
+      gross_margin:
+        type: decimal
+        description: price minus cost.
+      units_sold:
+        type: integer
+        description: Total units, all statuses, outliers included.
+      units_sold_ex_outliers:
+        type: integer
+        description: Preferred units measure.
+      net_revenue_ex_outliers:
+        type: decimal
+        description: DEFAULT revenue measure at product level.
+      avg_rating:
+        type: double
+        description: Mean review rating, 1-5. Null if never reviewed.
+      review_count:
+        type: integer
+      is_margin_violation:
+        type: boolean
+        description: Cost exceeds price. 9 products. Profit figures for these are negative.
+
+  - name: gold.obt_order_items
+    grain: one row per order_item_id
+    description: >
+      Denormalised wide table: line items pre-joined to order, customer, and
+      product attributes. Answers most questions with no joins at all. Use
+      this when a question spans line items, customers, and products.
+    answers_questions:
+      - revenue by customer segment and product category together
+      - any question spanning line items, customers, and products
+    caution: >
+      Order-level measures (order_total, shipping_cost) are REPEATED on every
+      line of the same order. Summing them here double-counts. Use line_total
+      or line_total_ex_outliers for revenue at this grain, or query fct_orders
+      for order-level totals.
+
+  - name: silver.stg_events
+    grain: one row per event_id
+    description: >
+      Clickstream events with nested JSON properties already flattened into
+      typed columns. Most columns are null on most rows, because each event
+      type carries different fields.
+    answers_questions:
+      - page views, product views, cart activity
+      - conversion funnel
+      - device and traffic source mix
+      - search queries
+    columns:
+      event_type:
+        type: varchar
+        allowed_values:
+          [page_view, product_view, add_to_cart, remove_from_cart, checkout_start, search]
+      customer_id:
+        type: varchar
+        description: >
+          NULL means anonymous traffic — a visitor who was not logged in.
+          This is a legitimate business fact, NOT a data error. 10,000 events.
+          Contrast with orders, where a missing customer is an error.
+      event_ts:
+        type: timestamp
+      device_type:
+        type: varchar
+        allowed_values: [mobile, desktop, tablet]
+      page_url:
+        type: varchar
+        description: Populated on page_view events only.
+      cart_value:
+        type: decimal
+        description: Populated on checkout_start events only.
+      search_query:
+        type: varchar
+        description: Populated on search events only.
+
+  - name: silver.stg_reviews
+    grain: one row per review_id
+    description: Customer product reviews with free-text bodies.
+    answers_questions:
+      - average rating by product or category
+      - review volume over time
+      - verified versus unverified reviews
+    columns:
+      rating:
+        type: integer
+        allowed_values: [1, 2, 3, 4, 5]
+      review_text:
+        type: varchar
+        description: >
+          Free text. Nullable — 552 reviews have no body. Contains commas,
+          quotes, newlines, and emoji.
+      verified_purchase:
+        type: boolean
+        description: >
+          False means the reviewer has no matching order for this product.
+          1,187 reviews. Whether this invalidates the review is a business
+          policy question, not a data question.
+    known_limitation: >
+      Roughly 5% of reviews have a rating that contradicts the sentiment of
+      their text — five stars on "Broke after a week. Very disappointed."
+      No SQL constraint can detect this: the rating is valid, the text is
+      non-empty, the keys resolve. Detecting it requires reading the text.
+      This is the gap the LLM exists to fill.
+
+# ---------------------------------------------------------------------------
+# Metrics: canonical definitions
+# ---------------------------------------------------------------------------
+
+metrics:
+
+  - name: revenue
+    label: Revenue
+    default_expression: sum(line_total_ex_outliers)
+    default_table: gold.fct_order_items
+    default_filter: is_completed
+    description: >
+      Money actually collected. Excludes cancelled and returned orders and
+      excludes outlier-quantity lines.
+    variants:
+      gross_revenue:
+        expression: sum(line_total)
+        filter: none
+        description: All orders, all line quantities.
+      net_revenue:
+        expression: sum(line_total)
+        filter: is_completed
+        description: Completed orders only, outliers included.
+
+  - name: order_count
+    label: Number of orders
+    default_expression: count(distinct order_id)
+    default_table: gold.fct_orders
+    description: >
+      Count orders from fct_orders. Counting from a line-item table without
+      DISTINCT counts line items instead.
+
+  - name: units_sold
+    label: Units sold
+    default_expression: sum(quantity) filter (where not is_outlier_quantity)
+    default_table: gold.fct_order_items
+
+  - name: average_order_value
+    label: Average order value
+    default_expression: sum(order_total) / count(distinct order_id)
+    default_table: gold.fct_orders
+    default_filter: is_completed
+    description: >
+      Compute from fct_orders. Deriving this from a line-item table requires
+      aggregating to order level first.
+
+  - name: customer_count
+    label: Number of customers
+    default_expression: count(distinct customer_id)
+    default_table: gold.dim_customers
+
+  - name: conversion_rate
+    label: Checkout conversion rate
+    description: >
+      Sessions reaching checkout_start divided by sessions with any event.
+      Compute from silver.stg_events, grouping by session_id.
+
+# ---------------------------------------------------------------------------
+# Join paths
+# ---------------------------------------------------------------------------
+
+joins:
+  - from: gold.fct_orders
+    to: gold.dim_customers
+    on: customer_id
+    cardinality: many-to-one
+
+  - from: gold.fct_order_items
+    to: gold.fct_orders
+    on: order_id
+    cardinality: many-to-one
+    warning: Summing order_total after this join double-counts.
+
+  - from: gold.fct_order_items
+    to: gold.dim_products
+    on: product_id
+    cardinality: many-to-one
+
+# ---------------------------------------------------------------------------
+# Known data quality conditions
+# ---------------------------------------------------------------------------
+# Stated here so the agent does not report these as findings, and so it can
+# caveat answers that touch them.
+
+known_conditions:
+  - 452 line items have quantities of 500-9999 units, carrying ~85% of raw revenue.
+  - 6,365 order headers have totals that disagree with the sum of their lines.
+  - 1,834 line items are a repeat of a product already on the same order.
+  - 509 customers have no city recorded.
+  - 15 products have no category.
+  - 9 products have a cost exceeding their price, so their profit is negative.
+  - 10,000 clickstream events are anonymous, which is expected rather than an error.
+  - 1,187 reviews are from customers with no matching purchase.
+  - 5,845 line items and 500 orders were quarantined and are absent from gold.

@@ -143,6 +143,11 @@ def inject_defects(orders, items, signup, product_ids) -> tuple[list[dict], list
         cid = orders[idx]["customer_id"]
         if cid in signup:
             earlier = signup[cid] - timedelta(days=random.randint(1, 400))
+            # Clamp to the business timeline. The order still predates its
+            # customer's signup — that violation is the point — but it must
+            # not fall outside the window the warehouse claims to cover, or
+            # every time-series query grows a tail of near-empty months.
+            earlier = max(earlier, START_DATE)
             orders[idx]["order_ts"] = datetime.combine(
                 earlier, datetime.min.time()
             ).isoformat(sep=" ")

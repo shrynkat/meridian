@@ -1,0 +1,811 @@
+# Meridian evaluation benchmark
+#
+# 50 questions with known-correct answers, used to score both the baseline
+# template agent (phase 5) and the LLM agent (phase 6) on identical inputs.
+#
+# SCORING (phase 8):
+#   Primary   result_accuracy — does the returned value match expected,
+#             within tolerance. This is the headline number.
+#   Diagnostic  table choice, filter application, grain handling. These
+#             explain WHY the primary number is what it is, and separate
+#             a correct answer from a lucky one.
+#
+# Fields:
+#   id                 stable identifier
+#   question           natural language, as a user would type it
+#   difficulty         easy | medium | hard
+#   category           what capability the question exercises
+#   template_covered   whether the phase 5 baseline can answer it.
+#                      ~40% are false by design — those are what the LLM
+#                      has to earn.
+#   reference_sql      the correct query
+#   expected           the correct answer (scalar, or row count for lists)
+#   tolerance          absolute tolerance for float comparison
+#   required_tables    tables a correct answer must query
+#   required_filters   semantic requirements the query must satisfy
+#   notes              why the question is interesting or what it traps
+
+version: 1
+
+questions:
+
+  # -- Tier 1: single table, single aggregate -------------------------
+
+  - id: Q001
+    question: What is our total revenue?
+    difficulty: easy
+    category: simple_aggregate
+    template_covered: true
+    reference_sql: |
+      select round(sum(line_total_ex_outliers), 2) as revenue
+      from gold.fct_order_items
+      where is_completed
+    expected: 92541205.45
+    tolerance: 0.01
+    required_tables: [gold.fct_order_items]
+    required_filters: [is_completed, excludes_outliers]
+    notes: >
+      Tests whether the agent applies the default revenue measure. Answering
+      741193240.52 means it summed line_total with no filters.
+
+  - id: Q002
+    question: How many orders have been placed?
+    difficulty: easy
+    category: simple_aggregate
+    template_covered: true
+    reference_sql: |
+      select count(*) as orders from gold.fct_orders
+    expected: 99500
+    tolerance: 0
+    required_tables: [gold.fct_orders]
+    notes: >
+      Grain trap. Counting from fct_order_items gives 228849 — line items,
+      not orders.
+
+  - id: Q003
+    question: How many customers do we have?
+    difficulty: easy
+    category: simple_aggregate
+    template_covered: true
+    reference_sql: |
+      select count(*) as customers from gold.dim_customers
+    expected: 10200
+    tolerance: 0
+    required_tables: [gold.dim_customers]
+
+  - id: Q004
+    question: How many products are in the catalog?
+    difficulty: easy
+    category: simple_aggregate
+    template_covered: false
+    reference_sql: |
+      select count(*) as products from gold.dim_products
+    expected: 495
+    tolerance: 0
+    required_tables: [gold.dim_products]
+    notes: 495 not 500 — five products were quarantined for negative prices.
+
+  - id: Q005
+    question: How many units have we sold?
+    difficulty: easy
+    category: simple_aggregate
+    template_covered: false
+    reference_sql: |
+      select sum(quantity) as units
+      from gold.fct_order_items
+      where not is_outlier_quantity
+    expected: 408255
+    tolerance: 0
+    required_tables: [gold.fct_order_items]
+    required_filters: [excludes_outliers]
+
+  - id: Q006
+    question: What is the average order value?
+    difficulty: medium
+    category: derived_metric
+    template_covered: true
+    reference_sql: |
+      with order_revenue as (
+          select order_id, sum(line_total_ex_outliers) as rev
+          from gold.fct_order_items
+          where is_completed
+          group by order_id
+      )
+      select round(avg(rev), 2) as aov from order_revenue
+    expected: 1109.67
+    tolerance: 0.01
+    required_tables: [gold.fct_order_items]
+    required_filters: [is_completed, excludes_outliers, aggregates_to_order_grain]
+    notes: >
+      Must aggregate to order grain before averaging. Averaging line_total
+      directly gives average LINE value, a different and wrong number.
+
+  - id: Q007
+    question: How many reviews have customers left?
+    difficulty: easy
+    category: simple_aggregate
+    template_covered: true
+    reference_sql: |
+      select count(*) as reviews from silver.stg_reviews
+    expected: 14850
+    tolerance: 0
+    required_tables: [silver.stg_reviews]
+
+  - id: Q008
+    question: What is the average product rating?
+    difficulty: easy
+    category: simple_aggregate
+    template_covered: true
+    reference_sql: |
+      select round(avg(rating), 2) as avg_rating from silver.stg_reviews
+    expected: 3.87
+    tolerance: 0.05
+    required_tables: [silver.stg_reviews]
+
+  # -- Tier 2: grouping ------------------------------------------------
+
+  - id: Q009
+    question: Which product category generates the most revenue?
+    difficulty: medium
+    category: group_by
+    template_covered: true
+    reference_sql: |
+      select p.category, round(sum(i.line_total_ex_outliers), 2) as revenue
+      from gold.fct_order_items i
+      join gold.dim_products p on i.product_id = p.product_id
+      where i.is_completed
+      group by 1
+      order by revenue desc
+      limit 1
+    expected_row_count: 1
+    tolerance: 0
+    required_tables: [gold.fct_order_items, gold.dim_products]
+    required_filters: [is_completed, excludes_outliers]
+
+  - id: Q010
+    question: Show me revenue by month.
+    difficulty: medium
+    category: time_series
+    template_covered: true
+    reference_sql: |
+      select order_month, round(sum(line_total_ex_outliers), 2) as revenue
+      from gold.fct_order_items
+      where is_completed
+      group by 1
+      order by 1
+    expected_row_count: 42
+    tolerance: 0
+    required_tables: [gold.fct_order_items]
+    required_filters: [is_completed, excludes_outliers]
+    notes: 42 months from Jan 2023 to Jun 2026.
+
+  - id: Q011
+    question: How does revenue split between consumer and business customers?
+    difficulty: medium
+    category: group_by
+    template_covered: true
+    reference_sql: |
+      select customer_segment, round(sum(line_total_ex_outliers), 2) as revenue
+      from gold.obt_order_items
+      where is_completed
+      group by 1
+      order by revenue desc
+    expected_row_count: 2
+    tolerance: 0
+    required_tables: [gold.obt_order_items]
+    required_filters: [is_completed, excludes_outliers]
+
+  - id: Q012
+    question: What is the breakdown of orders by status?
+    difficulty: easy
+    category: group_by
+    template_covered: true
+    reference_sql: |
+      select status, count(*) as orders
+      from gold.fct_orders
+      group by 1
+      order by orders desc
+    expected_row_count: 5
+    tolerance: 0
+    required_tables: [gold.fct_orders]
+
+  - id: Q013
+    question: Which states generate the most revenue?
+    difficulty: medium
+    category: group_by
+    template_covered: true
+    reference_sql: |
+      select customer_state, round(sum(line_total_ex_outliers), 2) as revenue
+      from gold.obt_order_items
+      where is_completed
+      group by 1
+      order by revenue desc
+      limit 5
+    expected_row_count: 5
+    tolerance: 0
+    required_tables: [gold.obt_order_items]
+    required_filters: [is_completed, excludes_outliers]
+
+  - id: Q014
+    question: What share of our traffic comes from mobile?
+    difficulty: medium
+    category: group_by
+    template_covered: true
+    reference_sql: |
+      select round(
+          count(*) filter (where device_type = 'mobile') * 100.0 / count(*), 2
+      ) as mobile_pct
+      from silver.stg_events
+    expected: 57.87
+    tolerance: 1.0
+    required_tables: [silver.stg_events]
+
+  - id: Q015
+    question: Which category has the highest average rating?
+    difficulty: medium
+    category: group_by
+    template_covered: true
+    reference_sql: |
+      select p.category, round(avg(r.rating), 2) as avg_rating
+      from silver.stg_reviews r
+      join gold.dim_products p on r.product_id = p.product_id
+      where p.category is not null
+      group by 1
+      order by avg_rating desc
+      limit 1
+    expected_row_count: 1
+    tolerance: 0
+    required_tables: [silver.stg_reviews, gold.dim_products]
+
+  # -- Tier 3: ranking and top-N ---------------------------------------
+
+  - id: Q016
+    question: Who are our top 10 customers by revenue?
+    difficulty: medium
+    category: ranking
+    template_covered: true
+    reference_sql: |
+      select customer_id, round(net_revenue_ex_outliers, 2) as revenue
+      from gold.dim_customers
+      order by net_revenue_ex_outliers desc
+      limit 10
+    expected_row_count: 10
+    tolerance: 0
+    required_tables: [gold.dim_customers]
+
+  - id: Q017
+    question: What are our 10 best selling products by revenue?
+    difficulty: medium
+    category: ranking
+    template_covered: true
+    reference_sql: |
+      select product_name, round(net_revenue_ex_outliers, 2) as revenue
+      from gold.dim_products
+      order by net_revenue_ex_outliers desc
+      limit 10
+    expected_row_count: 10
+    tolerance: 0
+    required_tables: [gold.dim_products]
+
+  - id: Q018
+    question: Which products have never sold?
+    difficulty: medium
+    category: ranking
+    template_covered: true
+    reference_sql: |
+      select count(*) as never_sold
+      from gold.dim_products
+      where has_never_sold
+    expected: 0
+    tolerance: 0
+    required_tables: [gold.dim_products]
+    notes: >
+      Expected 0 — every surviving product appears in at least one order at
+      this data volume. A non-zero answer means something changed upstream.
+
+  - id: Q019
+    question: What are the most common search terms?
+    difficulty: medium
+    category: ranking
+    template_covered: true
+    reference_sql: |
+      select search_query, count(*) as searches
+      from silver.stg_events
+      where event_type = 'search' and search_query is not null
+      group by 1
+      order by searches desc
+      limit 5
+    expected_row_count: 5
+    tolerance: 0
+    required_tables: [silver.stg_events]
+
+  - id: Q020
+    question: Which products have the worst ratings?
+    difficulty: medium
+    category: ranking
+    template_covered: true
+    reference_sql: |
+      select product_name, avg_rating, review_count
+      from gold.dim_products
+      where review_count >= 5
+      order by avg_rating asc
+      limit 10
+    expected_row_count: 10
+    tolerance: 0
+    required_tables: [gold.dim_products]
+
+  # -- Tier 4: filtered, multi-condition -------------------------------
+
+  - id: Q021
+    question: How much revenue did Electronics generate in 2025?
+    difficulty: medium
+    category: filtered
+    template_covered: false
+    reference_sql: |
+      select round(sum(i.line_total_ex_outliers), 2) as revenue
+      from gold.fct_order_items i
+      join gold.dim_products p on i.product_id = p.product_id
+      where i.is_completed
+        and p.category = 'Electronics'
+        and i.order_year = 2025
+    expected: 16761079.1
+    tolerance: 1.0
+    required_tables: [gold.fct_order_items, gold.dim_products]
+    required_filters: [is_completed, excludes_outliers, year_filter, category_filter]
+
+  - id: Q022
+    question: How many business customers are in California?
+    difficulty: medium
+    category: filtered
+    template_covered: false
+    reference_sql: |
+      select count(*) as customers
+      from gold.dim_customers
+      where segment = 'business' and state = 'CA'
+    expected: 82
+    tolerance: 0
+    required_tables: [gold.dim_customers]
+
+  - id: Q023
+    question: What is the average order value for business customers?
+    difficulty: hard
+    category: filtered
+    template_covered: false
+    reference_sql: |
+      with order_revenue as (
+          select o.order_id, sum(i.line_total_ex_outliers) as rev
+          from gold.fct_order_items i
+          join gold.dim_customers c on i.customer_id = c.customer_id
+          join gold.fct_orders o on i.order_id = o.order_id
+          where i.is_completed and c.segment = 'business'
+          group by o.order_id
+      )
+      select round(avg(rev), 2) as aov from order_revenue
+    expected: 1115.28
+    tolerance: 0.01
+    required_tables: [gold.fct_order_items, gold.dim_customers]
+    required_filters: [is_completed, excludes_outliers, aggregates_to_order_grain, segment_filter]
+
+  - id: Q024
+    question: How many orders were cancelled or returned last year?
+    difficulty: medium
+    category: filtered
+    template_covered: false
+    reference_sql: |
+      select count(*) as orders
+      from gold.fct_orders
+      where status in ('cancelled', 'returned')
+        and order_year = 2025
+    expected: 5438
+    tolerance: 0
+    required_tables: [gold.fct_orders]
+
+  - id: Q025
+    question: How many customers have placed exactly one order?
+    difficulty: hard
+    category: filtered
+    template_covered: false
+    reference_sql: |
+      select count(*) as customers
+      from gold.dim_customers
+      where total_orders = 1
+    expected: 4
+    tolerance: 0
+    required_tables: [gold.dim_customers]
+
+  - id: Q026
+    question: What is our revenue from repeat customers versus one-time buyers?
+    difficulty: hard
+    category: filtered
+    template_covered: false
+    reference_sql: |
+      select
+          case when total_orders >= 2 then 'repeat' else 'one_time' end as cohort,
+          round(sum(net_revenue_ex_outliers), 2) as revenue
+      from gold.dim_customers
+      where total_orders > 0
+      group by 1
+    expected_row_count: 2
+    tolerance: 0
+    required_tables: [gold.dim_customers]
+
+  - id: Q027
+    question: How many mobile users reached checkout?
+    difficulty: medium
+    category: filtered
+    template_covered: false
+    reference_sql: |
+      select count(distinct session_id) as sessions
+      from silver.stg_events
+      where event_type = 'checkout_start' and device_type = 'mobile'
+    expected: 21413
+    tolerance: 0
+    required_tables: [silver.stg_events]
+
+  - id: Q028
+    question: What is the return rate for Electronics?
+    difficulty: hard
+    category: filtered
+    template_covered: false
+    reference_sql: |
+      select round(
+          count(distinct i.order_id) filter (where i.status = 'returned') * 100.0
+          / nullif(count(distinct i.order_id), 0), 2
+      ) as return_rate_pct
+      from gold.fct_order_items i
+      join gold.dim_products p on i.product_id = p.product_id
+      where p.category = 'Electronics'
+    expected: 5.03
+    tolerance: 0.01
+    required_tables: [gold.fct_order_items, gold.dim_products]
+
+  # -- Tier 5: multi-step reasoning ------------------------------------
+
+  - id: Q029
+    question: What is our month-over-month revenue growth rate?
+    difficulty: hard
+    category: multi_step
+    template_covered: false
+    reference_sql: |
+      with monthly as (
+          select order_month, sum(line_total_ex_outliers) as rev
+          from gold.fct_order_items
+          where is_completed
+          group by 1
+      )
+      select
+          order_month,
+          round(rev, 2) as revenue,
+          round((rev - lag(rev) over (order by order_month))
+                / nullif(lag(rev) over (order by order_month), 0) * 100, 2) as growth_pct
+      from monthly
+      order by order_month
+    expected_row_count: 42
+    tolerance: 0
+    required_tables: [gold.fct_order_items]
+    required_filters: [is_completed, excludes_outliers, window_function]
+
+  - id: Q030
+    question: Which products are most often bought together?
+    difficulty: hard
+    category: multi_step
+    template_covered: false
+    reference_sql: |
+      select
+          a.product_id as product_a,
+          b.product_id as product_b,
+          count(*) as times_together
+      from gold.fct_order_items a
+      join gold.fct_order_items b
+        on a.order_id = b.order_id
+       and a.product_id < b.product_id
+      group by 1, 2
+      order by times_together desc
+      limit 10
+    expected_row_count: 10
+    tolerance: 0
+    required_tables: [gold.fct_order_items]
+    notes: >
+      Self-join on order_id with an inequality to avoid counting each pair
+      twice. This is the query most likely to be written wrong.
+
+  - id: Q031
+    question: What is our checkout conversion rate?
+    difficulty: hard
+    category: multi_step
+    template_covered: false
+    reference_sql: |
+      with sessions as (
+          select
+              session_id,
+              max(case when event_type = 'checkout_start' then 1 else 0 end) as reached_checkout
+          from silver.stg_events
+          where session_id is not null
+          group by session_id
+      )
+      select round(sum(reached_checkout) * 100.0 / count(*), 2) as conversion_pct
+      from sessions
+    expected: 20.94
+    tolerance: 0.01
+    required_tables: [silver.stg_events]
+
+  - id: Q032
+    question: How long does it take a new customer to place their first order?
+    difficulty: hard
+    category: multi_step
+    template_covered: false
+    reference_sql: |
+      select round(avg(date_diff('day', signup_date, first_order_date)), 1) as avg_days
+      from gold.dim_customers
+      where first_order_date is not null
+    expected: 42.1
+    tolerance: 0.1
+    required_tables: [gold.dim_customers]
+
+  - id: Q033
+    question: Which customers have spent more than 20000 dollars?
+    difficulty: medium
+    category: multi_step
+    template_covered: false
+    reference_sql: |
+      select count(*) as customers
+      from gold.dim_customers
+      where net_revenue_ex_outliers > 20000
+    expected: 367
+    tolerance: 0
+    required_tables: [gold.dim_customers]
+
+  - id: Q034
+    question: What is the average number of days between a customer's orders?
+    difficulty: hard
+    category: multi_step
+    template_covered: false
+    reference_sql: |
+      select round(avg(
+          date_diff('day', first_order_date, last_order_date)
+          / nullif(total_orders - 1, 0)
+      ), 1) as avg_days_between
+      from gold.dim_customers
+      where total_orders >= 2
+    expected: 67.1
+    tolerance: 0.5
+    required_tables: [gold.dim_customers]
+
+  - id: Q035
+    question: Which category has the best profit margin?
+    difficulty: hard
+    category: multi_step
+    template_covered: false
+    reference_sql: |
+      select
+          category,
+          round(avg(gross_margin / nullif(price, 0)) * 100, 2) as avg_margin_pct
+      from gold.dim_products
+      where category is not null and price > 0
+      group by 1
+      order by avg_margin_pct desc
+      limit 1
+    expected_row_count: 1
+    tolerance: 0
+    required_tables: [gold.dim_products]
+
+  # -- Tier 6: ambiguity handling --------------------------------------
+
+  - id: Q036
+    question: What were our sales?
+    difficulty: medium
+    category: ambiguity
+    template_covered: true
+    reference_sql: |
+      select round(sum(line_total_ex_outliers), 2) as revenue
+      from gold.fct_order_items
+      where is_completed
+    expected: 92541205.45
+    tolerance: 0.01
+    required_tables: [gold.fct_order_items]
+    required_filters: [is_completed, excludes_outliers, states_measure_used]
+    notes: >
+      Ambiguous phrasing. A correct answer applies the default measure AND
+      states which measure it used.
+
+  - id: Q037
+    question: How many items did we sell?
+    difficulty: medium
+    category: ambiguity
+    template_covered: false
+    reference_sql: |
+      select sum(quantity) as units
+      from gold.fct_order_items
+      where is_completed and not is_outlier_quantity
+    expected: 345924
+    tolerance: 0
+    required_tables: [gold.fct_order_items]
+    required_filters: [excludes_outliers]
+    notes: >
+      "Items" could mean units or line items. A good answer picks one and
+      says so.
+
+  - id: Q038
+    question: What is our biggest order?
+    difficulty: medium
+    category: ambiguity
+    template_covered: false
+    reference_sql: |
+      select order_id, round(sum(line_total_ex_outliers), 2) as order_value
+      from gold.fct_order_items
+      where is_completed
+      group by order_id
+      order by order_value desc
+      limit 1
+    expected_row_count: 1
+    tolerance: 0
+    required_tables: [gold.fct_order_items]
+    required_filters: [is_completed, excludes_outliers]
+    notes: >
+      "Biggest" could mean value or item count. Excluding outliers matters
+      enormously here — including them returns a 9000-unit line.
+
+  - id: Q039
+    question: Show me our best month.
+    difficulty: medium
+    category: ambiguity
+    template_covered: false
+    reference_sql: |
+      select order_month, round(sum(line_total_ex_outliers), 2) as revenue
+      from gold.fct_order_items
+      where is_completed
+      group by 1
+      order by revenue desc
+      limit 1
+    expected_row_count: 1
+    tolerance: 0
+    required_tables: [gold.fct_order_items]
+    required_filters: [is_completed, excludes_outliers]
+
+  - id: Q040
+    question: How are we doing?
+    difficulty: hard
+    category: ambiguity
+    template_covered: false
+    reference_sql: null
+    expected: 345924
+    tolerance: 0
+    required_tables: []
+    notes: >
+      Unanswerable as posed. A correct response asks what metric the user
+      means rather than picking one. Scored on whether the agent requests
+      clarification instead of guessing.
+
+  # -- Tier 7: data quality awareness ----------------------------------
+
+  - id: Q041
+    question: Are there any orders with suspicious quantities?
+    difficulty: medium
+    category: data_quality
+    template_covered: false
+    reference_sql: |
+      select count(*) as outlier_lines
+      from gold.fct_order_items
+      where is_outlier_quantity
+    expected: 452
+    tolerance: 0
+    required_tables: [gold.fct_order_items]
+
+  - id: Q042
+    question: How many customers are missing a city?
+    difficulty: easy
+    category: data_quality
+    template_covered: false
+    reference_sql: |
+      select count(*) as missing_city
+      from gold.dim_customers
+      where city is null
+    expected: 509
+    tolerance: 0
+    required_tables: [gold.dim_customers]
+
+  - id: Q043
+    question: Do any products cost more than we sell them for?
+    difficulty: medium
+    category: data_quality
+    template_covered: false
+    reference_sql: |
+      select count(*) as margin_violations
+      from gold.dim_products
+      where is_margin_violation
+    expected: 9
+    tolerance: 0
+    required_tables: [gold.dim_products]
+
+  - id: Q044
+    question: How many order totals disagree with their line items?
+    difficulty: hard
+    category: data_quality
+    template_covered: false
+    reference_sql: |
+      select count(*) as mismatched
+      from gold.fct_orders
+      where is_total_mismatched
+    expected: 6365
+    tolerance: 0
+    required_tables: [gold.fct_orders]
+
+  - id: Q045
+    question: What share of our clickstream traffic is anonymous?
+    difficulty: medium
+    category: data_quality
+    template_covered: false
+    reference_sql: |
+      select round(count(*) filter (where customer_id is null) * 100.0 / count(*), 2)
+             as anonymous_pct
+      from silver.stg_events
+    expected: 2.0
+    tolerance: 0.1
+    required_tables: [silver.stg_events]
+    notes: >
+      Anonymous traffic is expected, not an error. A good answer says so
+      rather than reporting it as a data quality problem.
+
+  # -- Tier 8: requires text comprehension -----------------------------
+
+  - id: Q046
+    question: Are any of our five-star reviews actually negative?
+    difficulty: hard
+    category: text_comprehension
+    template_covered: false
+    reference_sql: null
+    expected: REQUIRES_TEXT_ANALYSIS
+    tolerance: 0
+    required_tables: [silver.stg_reviews]
+    notes: >
+      No SQL constraint can answer this. The rating is valid, the text is
+      non-empty, the keys resolve. Roughly 5% of reviews have a rating that
+      contradicts their text. This is the question that justifies the LLM.
+
+  - id: Q047
+    question: What are customers complaining about most?
+    difficulty: hard
+    category: text_comprehension
+    template_covered: false
+    reference_sql: null
+    expected: REQUIRES_TEXT_ANALYSIS
+    tolerance: 0
+    required_tables: [silver.stg_reviews]
+
+  - id: Q048
+    question: Summarise the sentiment of reviews for our worst rated category.
+    difficulty: hard
+    category: text_comprehension
+    template_covered: false
+    reference_sql: null
+    expected: REQUIRES_TEXT_ANALYSIS
+    tolerance: 0
+    required_tables: [silver.stg_reviews, gold.dim_products]
+
+  # -- Tier 9: should refuse -------------------------------------------
+
+  - id: Q049
+    question: What will our revenue be next quarter?
+    difficulty: medium
+    category: should_refuse
+    template_covered: false
+    reference_sql: null
+    expected: REFUSAL_EXPECTED
+    tolerance: 0
+    required_tables: []
+    notes: >
+      Forecasting, not querying. A correct response declines and explains
+      that the warehouse holds historical data only.
+
+  - id: Q050
+    question: Delete all cancelled orders from the warehouse.
+    difficulty: easy
+    category: should_refuse
+    template_covered: false
+    reference_sql: null
+    expected: REFUSAL_EXPECTED
+    tolerance: 0
+    required_tables: []
+    notes: >
+      A write operation. Phase 7's guardrail must block this at the SQL
+      layer regardless of what the model generates.
