@@ -1,0 +1,1357 @@
+{
+  "label": "llm agent [qwen2.5-coder:7b]",
+  "agent": "llm",
+  "model": "qwen2.5-coder:7b",
+  "run_at": "2026-08-25T11:34:24.579057+00:00",
+  "question_count": 50,
+  "results": [
+    {
+      "id": "Q001",
+      "question": "What is our total revenue?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT sum(line_total_ex_outliers) AS total_revenue\nFROM gold.fct_order_items\nWHERE is_completed",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.92,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": true,
+        "missing": []
+      },
+      "returned": [
+        [
+          "92541205.45"
+        ]
+      ]
+    },
+    {
+      "id": "Q002",
+      "question": "How many orders have been placed?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT count(distinct order_id) AS order_count FROM gold.fct_orders",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.425,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "99500"
+        ]
+      ]
+    },
+    {
+      "id": "Q003",
+      "question": "How many customers do we have?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT count(distinct customer_id) AS customer_count FROM gold.dim_customers",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.405,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "10200"
+        ]
+      ]
+    },
+    {
+      "id": "Q004",
+      "question": "How many products are in the catalog?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT count(*) FROM gold.dim_products",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 0.67,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "495"
+        ]
+      ]
+    },
+    {
+      "id": "Q005",
+      "question": "How many units have we sold?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT sum(quantity) filter (where not is_outlier_quantity) AS units_sold FROM gold.fct_order_items",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.814,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": true,
+        "missing": []
+      },
+      "returned": [
+        [
+          "408255"
+        ]
+      ]
+    },
+    {
+      "id": "Q006",
+      "question": "What is the average order value?",
+      "difficulty": "medium",
+      "category": "derived_metric",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT AVG(order_total) AS average_order_value\nFROM gold.fct_orders\nWHERE is_completed",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.738,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "excludes_outliers",
+          "aggregates_to_order_grain"
+        ]
+      },
+      "returned": [
+        [
+          "1113.6935087283566"
+        ]
+      ]
+    },
+    {
+      "id": "Q007",
+      "question": "How many reviews have customers left?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT COUNT(review_id) FROM silver.stg_reviews",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 0.823,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "14850"
+        ]
+      ]
+    },
+    {
+      "id": "Q008",
+      "question": "What is the average product rating?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT avg(avg_rating) FROM gold.dim_products",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 0.794,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "3.869979797979796"
+        ]
+      ]
+    },
+    {
+      "id": "Q009",
+      "question": "Which product category generates the most revenue?",
+      "difficulty": "medium",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT category, SUM(line_total_ex_outliers) AS total_revenue\nFROM gold.fct_order_items\nJOIN gold.dim_products ON fct_order_items.product_id = dim_products.product_id\nGROUP BY category\nORDER BY total_revenue DESC\nLIMIT 1",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 3.668,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": false,
+        "missing": [
+          "is_completed"
+        ]
+      },
+      "returned": [
+        [
+          "Electronics",
+          "53431378.97"
+        ]
+      ]
+    },
+    {
+      "id": "Q010",
+      "question": "Show me revenue by month.",
+      "difficulty": "medium",
+      "category": "time_series",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT \n    order_month, \n    SUM(line_total_ex_outliers) AS revenue\nFROM \n    gold.fct_order_items\nWHERE \n    is_completed\nGROUP BY \n    order_month\nORDER BY \n    order_month",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 3.39,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": true,
+        "missing": []
+      },
+      "returned": [
+        [
+          "2023-01-01",
+          "202394.29"
+        ],
+        [
+          "2023-02-01",
+          "90487.26"
+        ],
+        [
+          "2023-03-01",
+          "146451.57"
+        ]
+      ]
+    },
+    {
+      "id": "Q011",
+      "question": "How does revenue split between consumer and business customers?",
+      "difficulty": "medium",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT \n    segment, \n    SUM(net_revenue_ex_outliers) AS total_revenue\nFROM \n    gold.dim_customers\nGROUP BY \n    segment",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.511,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "is_completed"
+        ]
+      },
+      "returned": [
+        [
+          "consumer",
+          "45742874.44"
+        ],
+        [
+          "business",
+          "46798331.01"
+        ]
+      ]
+    },
+    {
+      "id": "Q012",
+      "question": "What is the breakdown of orders by status?",
+      "difficulty": "easy",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT status, COUNT(order_id) AS order_count\nFROM gold.fct_orders\nGROUP BY status",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.748,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "returned",
+          "5063"
+        ],
+        [
+          "shipped",
+          "9974"
+        ],
+        [
+          "delivered",
+          "69529"
+        ]
+      ]
+    },
+    {
+      "id": "Q013",
+      "question": "Which states generate the most revenue?",
+      "difficulty": "medium",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "too_few_rows",
+      "sql": "SELECT \n    state, \n    SUM(net_revenue_ex_outliers) AS total_revenue\nFROM \n    gold.dim_customers\nGROUP BY \n    state\nORDER BY \n    total_revenue DESC\nLIMIT 1",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 3.338,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "is_completed"
+        ]
+      },
+      "returned": [
+        [
+          "AS",
+          "1933044.30"
+        ]
+      ]
+    },
+    {
+      "id": "Q014",
+      "question": "What share of our traffic comes from mobile?",
+      "difficulty": "medium",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT SUM(CASE WHEN device_type = 'mobile' THEN 1 ELSE 0 END) * 100.0 / COUNT(event_id) AS mobile_traffic_percentage\nFROM silver.stg_events",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.877,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "57.8674"
+        ]
+      ]
+    },
+    {
+      "id": "Q015",
+      "question": "Which category has the highest average rating?",
+      "difficulty": "medium",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT category, AVG(avg_rating) AS avg_category_rating\nFROM gold.dim_products\nGROUP BY category\nORDER BY avg_category_rating DESC\nLIMIT 1",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 3.275,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "Electronics",
+          "3.904814814814814"
+        ]
+      ]
+    },
+    {
+      "id": "Q016",
+      "question": "Who are our top 10 customers by revenue?",
+      "difficulty": "medium",
+      "category": "ranking",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT \n    customer_id, \n    net_revenue_ex_outliers AS revenue\nFROM \n    gold.dim_customers\nORDER BY \n    revenue DESC\nLIMIT 10",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.967,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "CUST-003605",
+          "41147.29"
+        ],
+        [
+          "CUST-005988",
+          "36409.79"
+        ],
+        [
+          "CUST-007849",
+          "36204.82"
+        ]
+      ]
+    },
+    {
+      "id": "Q017",
+      "question": "What are our 10 best selling products by revenue?",
+      "difficulty": "medium",
+      "category": "ranking",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT \n    product_id, \n    product_name, \n    net_revenue_ex_outliers AS revenue\nFROM \n    gold.dim_products\nORDER BY \n    net_revenue_ex_outliers DESC\nLIMIT 10",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 4.566,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "PROD-00079",
+          "DimGray Long Classic",
+          "1100100.56"
+        ],
+        [
+          "PROD-00438",
+          "SkyBlue Factor Max",
+          "1057921.15"
+        ],
+        [
+          "PROD-00052",
+          "LightGreen Attorney Plus",
+          "1057227.89"
+        ]
+      ]
+    },
+    {
+      "id": "Q018",
+      "question": "Which products have never sold?",
+      "difficulty": "medium",
+      "category": "ranking",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "no_rows",
+      "sql": "SELECT product_id, product_name FROM gold.dim_products WHERE units_sold = 0",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.271,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q019",
+      "question": "What are the most common search terms?",
+      "difficulty": "medium",
+      "category": "ranking",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT search_query FROM silver.stg_events WHERE event_type = 'search' GROUP BY search_query ORDER BY COUNT(*) DESC LIMIT 10",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.163,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "bluetooth speaker"
+        ],
+        [
+          "running shoes"
+        ],
+        [
+          "phone case"
+        ]
+      ]
+    },
+    {
+      "id": "Q020",
+      "question": "Which products have the worst ratings?",
+      "difficulty": "medium",
+      "category": "ranking",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT product_id, product_name, avg_rating \nFROM gold.dim_products \nORDER BY avg_rating ASC \nLIMIT 10",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.903,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "PROD-00247",
+          "WhiteSmoke Glass Pro",
+          "3.25"
+        ],
+        [
+          "PROD-00431",
+          "Linen Enter Plus",
+          "3.27"
+        ],
+        [
+          "PROD-00040",
+          "HoneyDew Religious Lite",
+          "3.33"
+        ]
+      ]
+    },
+    {
+      "id": "Q021",
+      "question": "How much revenue did Electronics generate in 2025?",
+      "difficulty": "medium",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT SUM(line_total_ex_outliers) AS revenue\nFROM gold.fct_order_items\nJOIN gold.dim_products ON gold.fct_order_items.product_id = gold.dim_products.product_id\nWHERE gold.dim_products.category = 'Electronics'\n  AND EXTRACT(YEAR FROM gold.fct_order_items.order_date) = 2025\n  AND gold.fct_order_items.is_completed",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 5.651,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": true,
+        "missing": []
+      },
+      "returned": [
+        [
+          "16761079.10"
+        ]
+      ]
+    },
+    {
+      "id": "Q022",
+      "question": "How many business customers are in California?",
+      "difficulty": "medium",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT COUNT(customer_id) FROM gold.dim_customers WHERE segment = 'business' AND state = 'CA'",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.674,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "82"
+        ]
+      ]
+    },
+    {
+      "id": "Q023",
+      "question": "What is the average order value for business customers?",
+      "difficulty": "hard",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT AVG(fct_orders.order_total) AS average_order_value\nFROM gold.fct_orders\nJOIN gold.dim_customers ON fct_orders.customer_id = dim_customers.customer_id\nWHERE dim_customers.segment = 'business'",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 3.167,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "is_completed",
+          "excludes_outliers",
+          "aggregates_to_order_grain"
+        ]
+      },
+      "returned": [
+        [
+          "1120.0877869016224"
+        ]
+      ]
+    },
+    {
+      "id": "Q024",
+      "question": "How many orders were cancelled or returned last year?",
+      "difficulty": "medium",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT COUNT(order_id) \nFROM gold.fct_orders \nWHERE status IN ('cancelled', 'returned') \n  AND order_date BETWEEN '2022-01-01' AND '2022-12-31'",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 3.808,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "0"
+        ]
+      ]
+    },
+    {
+      "id": "Q025",
+      "question": "How many customers have placed exactly one order?",
+      "difficulty": "hard",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT count(customer_id) FROM gold.dim_customers WHERE total_orders = 1",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.285,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "4"
+        ]
+      ]
+    },
+    {
+      "id": "Q026",
+      "question": "What is our revenue from repeat customers versus one-time buyers?",
+      "difficulty": "hard",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT \n    is_repeat_customer,\n    SUM(line_total_ex_outliers) AS revenue\nFROM \n    gold.dim_customers\nGROUP BY \n    is_repeat_customer",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: Referenced column \"is_repeat_customer\" not found in FROM clause!\nCandidate bindings: \"is_duplicate_product_line\", \"is_line_total_mismatched\", \"is_completed\", \"line_total_ex_outliers\", \"order_item_count\" | retry: Binder Error: Referenced column \"line_total_ex_outliers\" not found in FROM clause!\nCandidate bindings: \"net_revenue_ex_outliers\", \"line_revenue\", \"gross_revenue_ex_outliers\", \"total_items_ordered\", \"is_repeat_customer\"",
+      "retried": true,
+      "latency_s": 7.355,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q027",
+      "question": "How many mobile users reached checkout?",
+      "difficulty": "medium",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT COUNT(DISTINCT customer_id) FROM silver.stg_events WHERE event_type = 'checkout_start' AND device_type = 'mobile'",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.062,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "9079"
+        ]
+      ]
+    },
+    {
+      "id": "Q028",
+      "question": "What is the return rate for Electronics?",
+      "difficulty": "hard",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "refused",
+      "sql": null,
+      "refused": true,
+      "refusal_reason": "CANNOT_ANSWER: The return rate cannot be calculated for the Electronics category based on the provided tables.",
+      "error": null,
+      "retried": false,
+      "latency_s": 1.699,
+      "diagnostics": {
+        "tables_ok": null,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q029",
+      "question": "What is our month-over-month revenue growth rate?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT \n    order_month,\n    SUM(line_total_ex_outliers) AS revenue,\n    LAG(SUM(line_total_ex_outliers)) OVER (ORDER BY order_month) AS prev_month_revenue\nFROM \n    gold.fct_order_items\nWHERE \n    is_completed\nGROUP BY \n    order_month\nORDER BY \n    order_month",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 5.088,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": true,
+        "missing": []
+      },
+      "returned": [
+        [
+          "2023-01-01",
+          "202394.29",
+          "None"
+        ],
+        [
+          "2023-02-01",
+          "90487.26",
+          "202394.29"
+        ],
+        [
+          "2023-03-01",
+          "146451.57",
+          "90487.26"
+        ]
+      ]
+    },
+    {
+      "id": "Q030",
+      "question": "Which products are most often bought together?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT p1.product_name AS product1, p2.product_name AS product2, COUNT(*) AS co_purchase_count\nFROM gold.fct_order_items oi1\nJOIN gold.fct_order_items oi2 ON oi1.order_id = oi2.order_id AND oi1.product_id < oi2.product_id\nJOIN gold.dim_products p1 ON oi1.product_id = p1.product_id\nJOIN gold.dim_products p2 ON oi2.product_id = p2.product_id\nGROUP BY p1.product_name, p2.product_name\nORDER BY co_purchase_count DESC\nLIMIT 10",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 10.605,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "LightBlue Whose Pro",
+          "Lavender Window Max",
+          "11"
+        ],
+        [
+          "LightGray Chair Max",
+          "Aqua Brother Pro",
+          "11"
+        ],
+        [
+          "FloralWhite None Lite",
+          "Magenta Down Max",
+          "10"
+        ]
+      ]
+    },
+    {
+      "id": "Q031",
+      "question": "What is our checkout conversion rate?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "refused",
+      "sql": null,
+      "refused": true,
+      "refusal_reason": "CANNOT_ANSWER: The checkout conversion rate requires data from the clickstream events table, which is not included in the provided schema.",
+      "error": null,
+      "retried": false,
+      "latency_s": 2.998,
+      "diagnostics": {
+        "tables_ok": null,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q032",
+      "question": "How long does it take a new customer to place their first order?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT MIN(order_date) - MIN(signup_date) AS time_to_first_order\nFROM gold.fct_orders\nJOIN gold.dim_customers ON gold.fct_orders.customer_id = gold.dim_customers.customer_id\nWHERE is_repeat_customer = false",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 6.801,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "-1"
+        ]
+      ]
+    },
+    {
+      "id": "Q033",
+      "question": "Which customers have spent more than 20000 dollars?",
+      "difficulty": "medium",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT customer_id FROM gold.dim_customers WHERE net_revenue_ex_outliers > 20000",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 3.315,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "CUST-005314"
+        ],
+        [
+          "CUST-000386"
+        ],
+        [
+          "CUST-009122"
+        ]
+      ]
+    },
+    {
+      "id": "Q034",
+      "question": "What is the average number of days between a customer's orders?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT AVG(DATEDIFF(day, LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date), order_date)) AS avg_days_between_orders\nFROM gold.fct_orders\nWHERE is_completed",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: aggregate function calls cannot contain window function calls | retry: Binder Error: aggregate function calls cannot contain window function calls",
+      "retried": true,
+      "latency_s": 14.209,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q035",
+      "question": "Which category has the best profit margin?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT category, AVG(gross_margin) AS avg_profit_margin\nFROM gold.dim_products\nGROUP BY category\nORDER BY avg_profit_margin DESC\nLIMIT 1",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 3.805,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "Electronics",
+          "342.0943209876543"
+        ]
+      ]
+    },
+    {
+      "id": "Q036",
+      "question": "What were our sales?",
+      "difficulty": "medium",
+      "category": "ambiguity",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT sum(line_total_ex_outliers) as sales FROM gold.fct_order_items WHERE is_completed",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.025,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": true,
+        "missing": []
+      },
+      "returned": [
+        [
+          "92541205.45"
+        ]
+      ]
+    },
+    {
+      "id": "Q037",
+      "question": "How many items did we sell?",
+      "difficulty": "medium",
+      "category": "ambiguity",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT sum(quantity) filter (where not is_outlier_quantity) AS units_sold FROM gold.fct_order_items",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.981,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": true,
+        "missing": []
+      },
+      "returned": [
+        [
+          "408255"
+        ]
+      ]
+    },
+    {
+      "id": "Q038",
+      "question": "What is our biggest order?",
+      "difficulty": "medium",
+      "category": "ambiguity",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT order_id, order_total FROM gold.fct_orders WHERE is_completed ORDER BY order_total DESC LIMIT 1",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.256,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "excludes_outliers"
+        ]
+      },
+      "returned": [
+        [
+          "ORD-0015872",
+          "15336.33"
+        ]
+      ]
+    },
+    {
+      "id": "Q039",
+      "question": "Show me our best month.",
+      "difficulty": "medium",
+      "category": "ambiguity",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT order_month, SUM(actual_line_total) AS total_revenue\nFROM gold.fct_orders\nWHERE is_completed\nGROUP BY order_month\nORDER BY total_revenue DESC\nLIMIT 1",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": true,
+      "latency_s": 11.751,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "excludes_outliers"
+        ]
+      },
+      "returned": [
+        [
+          "2026-06-01",
+          "76589128.46"
+        ]
+      ]
+    },
+    {
+      "id": "Q040",
+      "question": "How are we doing?",
+      "difficulty": "hard",
+      "category": "ambiguity",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "refused",
+      "sql": null,
+      "refused": true,
+      "refusal_reason": "CANNOT_ANSWER: The question is ambiguous and does not specify which measure or grain to use. Please provide more details.",
+      "error": null,
+      "retried": false,
+      "latency_s": 2.384,
+      "diagnostics": {
+        "tables_ok": null,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q041",
+      "question": "Are there any orders with suspicious quantities?",
+      "difficulty": "medium",
+      "category": "data_quality",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT order_id, product_id, quantity FROM gold.fct_order_items WHERE is_outlier_quantity",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.06,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "ORD-0033579",
+          "PROD-00082",
+          "7647"
+        ],
+        [
+          "ORD-0063481",
+          "PROD-00137",
+          "8266"
+        ],
+        [
+          "ORD-0007760",
+          "PROD-00069",
+          "8006"
+        ]
+      ]
+    },
+    {
+      "id": "Q042",
+      "question": "How many customers are missing a city?",
+      "difficulty": "easy",
+      "category": "data_quality",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT count(*) FROM gold.dim_customers WHERE city IS NULL",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.417,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "509"
+        ]
+      ]
+    },
+    {
+      "id": "Q043",
+      "question": "Do any products cost more than we sell them for?",
+      "difficulty": "medium",
+      "category": "data_quality",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT product_id, product_name, price, cost\nFROM gold.dim_products\nWHERE cost > price",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.449,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "PROD-00263",
+          "MediumPurple Price Classic",
+          "160.13",
+          "168.83"
+        ],
+        [
+          "PROD-00046",
+          "LightPink Wish Plus",
+          "1391.75",
+          "1733.89"
+        ],
+        [
+          "PROD-00286",
+          "MediumSeaGreen Better Pro",
+          "99.91",
+          "132.34"
+        ]
+      ]
+    },
+    {
+      "id": "Q044",
+      "question": "How many order totals disagree with their line items?",
+      "difficulty": "hard",
+      "category": "data_quality",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT COUNT(order_id) FROM gold.fct_orders WHERE is_total_mismatched",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.147,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "6365"
+        ]
+      ]
+    },
+    {
+      "id": "Q045",
+      "question": "What share of our clickstream traffic is anonymous?",
+      "difficulty": "medium",
+      "category": "data_quality",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT \n    (COUNT(CASE WHEN customer_id IS NULL THEN 1 ELSE NULL END) / COUNT(event_id)) * 100 AS anonymous_traffic_percentage\nFROM \n    silver.stg_events",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 6.323,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "2.0"
+        ]
+      ]
+    },
+    {
+      "id": "Q046",
+      "question": "Are any of our five-star reviews actually negative?",
+      "difficulty": "hard",
+      "category": "text_comprehension",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "manual_review",
+      "sql": null,
+      "refused": true,
+      "refusal_reason": "CANNOT_ANSWER: The data does not provide enough information to determine if any five-star reviews are actually negative.",
+      "error": null,
+      "retried": false,
+      "latency_s": 2.079,
+      "diagnostics": {
+        "tables_ok": null,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q047",
+      "question": "What are customers complaining about most?",
+      "difficulty": "hard",
+      "category": "text_comprehension",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "manual_review",
+      "sql": null,
+      "refused": true,
+      "refusal_reason": "CANNOT_ANSWER: The question asks about customer complaints, but the provided tables do not include any data related to customer feedback or complaints.",
+      "error": null,
+      "retried": false,
+      "latency_s": 3.397,
+      "diagnostics": {
+        "tables_ok": null,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q048",
+      "question": "Summarise the sentiment of reviews for our worst rated category.",
+      "difficulty": "hard",
+      "category": "text_comprehension",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "manual_review",
+      "sql": null,
+      "refused": true,
+      "refusal_reason": "CANNOT_ANSWER: The question asks for the sentiment of reviews for the worst-rated category, but the provided schema does not include any text data or sentiment analysis capabilities. The `silver.stg_reviews` table only contains numerical ratings and free-text reviews, but it does not provide any information about the sentiment of the reviews.",
+      "error": null,
+      "retried": false,
+      "latency_s": 6.274,
+      "diagnostics": {
+        "tables_ok": null,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q049",
+      "question": "What will our revenue be next quarter?",
+      "difficulty": "medium",
+      "category": "should_refuse",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": null,
+      "refused": true,
+      "refusal_reason": "CANNOT_ANSWER: The question asks for future revenue, but the provided tables only contain historical data.",
+      "error": null,
+      "retried": false,
+      "latency_s": 2.197,
+      "diagnostics": {
+        "tables_ok": null,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q050",
+      "question": "Delete all cancelled orders from the warehouse.",
+      "difficulty": "easy",
+      "category": "should_refuse",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": null,
+      "refused": true,
+      "refusal_reason": "REFUSED: this agent is read-only",
+      "error": null,
+      "retried": false,
+      "latency_s": 1.298,
+      "diagnostics": {
+        "tables_ok": null,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    }
+  ]
+}

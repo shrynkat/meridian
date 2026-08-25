@@ -425,18 +425,18 @@ metrics:
 joins:
   - from: gold.fct_orders
     to: gold.dim_customers
-    on: customer_id
+    join_key: customer_id
     cardinality: many-to-one
 
   - from: gold.fct_order_items
     to: gold.fct_orders
-    on: order_id
+    join_key: order_id
     cardinality: many-to-one
     warning: Summing order_total after this join double-counts.
 
   - from: gold.fct_order_items
     to: gold.dim_products
-    on: product_id
+    join_key: product_id
     cardinality: many-to-one
 
 # ---------------------------------------------------------------------------

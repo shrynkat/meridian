@@ -1,0 +1,1230 @@
+{
+  "label": "llm agent [sqlcoder:7b]",
+  "agent": "llm",
+  "model": "sqlcoder:7b",
+  "run_at": "2026-08-25T11:49:19.691421+00:00",
+  "question_count": 50,
+  "results": [
+    {
+      "id": "Q001",
+      "question": "What is our total revenue?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT SUM(net_revenue_ex_outliers) AS total_revenue FROM gold.fct_orders WHERE is_completed = TRUE",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: Referenced column \"net_revenue_ex_outliers\" not found in FROM clause!\nCandidate bindings: \"has_no_source_items\", \"order_total\", \"item_count\", \"customer_id\", \"actual_line_count\" | retry produced no SQL",
+      "retried": true,
+      "latency_s": 28.881,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": true,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q002",
+      "question": "How many orders have been placed?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT COUNT(DISTINCT order_id) AS order_count FROM gold.fct_orders",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 41.493,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "99500"
+        ]
+      ]
+    },
+    {
+      "id": "Q003",
+      "question": "How many customers do we have?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT COUNT(DISTINCT customer_id) AS total_customers FROM gold.dim_customers",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 51.23,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "10200"
+        ]
+      ]
+    },
+    {
+      "id": "Q004",
+      "question": "How many products are in the catalog?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT COUNT(DISTINCT product_id) AS product_count FROM gold.dim_products",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 35.884,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "495"
+        ]
+      ]
+    },
+    {
+      "id": "Q005",
+      "question": "How many units have we sold?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT SUM(quantity) filter (WHERE not is_outlier_quantity) AS total_units_sold FROM gold.fct_order_items",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 7.09,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": true,
+        "missing": []
+      },
+      "returned": [
+        [
+          "408255"
+        ]
+      ]
+    },
+    {
+      "id": "Q006",
+      "question": "What is the average order value?",
+      "difficulty": "medium",
+      "category": "derived_metric",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT AVG(order_total) AS average_order_total FROM gold.fct_orders WHERE is_completed = TRUE",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.548,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "excludes_outliers",
+          "aggregates_to_order_grain"
+        ]
+      },
+      "returned": [
+        [
+          "1113.6935087283566"
+        ]
+      ]
+    },
+    {
+      "id": "Q007",
+      "question": "How many reviews have customers left?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT COUNT(*) FROM silver.stg_reviews WHERE verified_purchase = FALSE",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.028,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "1191"
+        ]
+      ]
+    },
+    {
+      "id": "Q008",
+      "question": "What is the average product rating?",
+      "difficulty": "easy",
+      "category": "simple_aggregate",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT AVG(rating) FROM silver.stg_reviews WHERE verified_purchase = TRUE",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.981,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "3.8696097810967127"
+        ]
+      ]
+    },
+    {
+      "id": "Q009",
+      "question": "Which product category generates the most revenue?",
+      "difficulty": "medium",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT dim_products.category, SUM(line_total_ex_outliers) AS total_revenue FROM fct_order_items JOIN dim_products ON product_id = product_id GROUP BY category ORDER BY total_revenue DESC NULLS LAST",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Catalog Error: Table with name fct_order_items does not exist!\nDid you mean \"gold.fct_order_items\"? | retry produced no SQL",
+      "retried": true,
+      "latency_s": 7.655,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "is_completed"
+        ]
+      },
+      "returned": []
+    },
+    {
+      "id": "Q010",
+      "question": "Show me revenue by month.",
+      "difficulty": "medium",
+      "category": "time_series",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT date_trunc('month', order_date) AS MONTH, SUM(net_revenue_ex_outliers) AS revenue FROM gold.fct_orders WHERE is_completed GROUP BY MONTH",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: Referenced column \"net_revenue_ex_outliers\" not found in FROM clause!\nCandidate bindings: \"has_no_source_items\", \"order_total\", \"item_count\", \"customer_id\", \"actual_line_count\" | retry produced no SQL",
+      "retried": true,
+      "latency_s": 6.827,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": true,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q011",
+      "question": "How does revenue split between consumer and business customers?",
+      "difficulty": "medium",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT segment, SUM(net_revenue_ex_outliers) AS revenue_total FROM gold.dim_customers GROUP BY segment",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 3.536,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "is_completed"
+        ]
+      },
+      "returned": [
+        [
+          "business",
+          "46798331.01"
+        ],
+        [
+          "consumer",
+          "45742874.44"
+        ]
+      ]
+    },
+    {
+      "id": "Q012",
+      "question": "What is the breakdown of orders by status?",
+      "difficulty": "easy",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT status, COUNT(*) AS order_count FROM gold.fct_orders GROUP BY status",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.06,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "returned",
+          "5063"
+        ],
+        [
+          "shipped",
+          "9974"
+        ],
+        [
+          "delivered",
+          "69529"
+        ]
+      ]
+    },
+    {
+      "id": "Q013",
+      "question": "Which states generate the most revenue?",
+      "difficulty": "medium",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT dim_customers.state, SUM(net_revenue_ex_outliers) AS total_revenue FROM dim_customers GROUP BY state ORDER BY total_revenue DESC NULLS LAST",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Catalog Error: Table with name dim_customers does not exist!\nDid you mean \"gold.dim_customers\"? | retry produced no SQL",
+      "retried": true,
+      "latency_s": 6.464,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "is_completed"
+        ]
+      },
+      "returned": []
+    },
+    {
+      "id": "Q014",
+      "question": "What share of our traffic comes from mobile?",
+      "difficulty": "medium",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT CAST(SUM(CASE WHEN device_type = 'mobile' THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(SUM(CASE WHEN device_type IS NOT NULL THEN 1 ELSE 0 END), 0) AS mobile_traffic_ratio FROM silver.stg_events",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 5.807,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "0.5786740183830261"
+        ]
+      ]
+    },
+    {
+      "id": "Q015",
+      "question": "Which category has the highest average rating?",
+      "difficulty": "medium",
+      "category": "group_by",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT category, AVG(rating) AS average_rating FROM silver.stg_reviews GROUP BY category ORDER BY average_rating DESC NULLS LAST LIMIT 1",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: Referenced column \"category\" not found in FROM clause!\nCandidate bindings: \"customer_id\", \"rating\", \"rating_sentiment\" | retry produced no SQL",
+      "retried": true,
+      "latency_s": 5.791,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q016",
+      "question": "Who are our top 10 customers by revenue?",
+      "difficulty": "medium",
+      "category": "ranking",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT dim_customers.customer_id, net_revenue FROM dim_customers WHERE segment = 'consumer' ORDER BY net_revenue DESC NULLS LAST LIMIT 10",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Catalog Error: Table with name dim_customers does not exist!\nDid you mean \"gold.dim_customers\"? | retry produced no SQL",
+      "retried": true,
+      "latency_s": 6.215,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q017",
+      "question": "What are our 10 best selling products by revenue?",
+      "difficulty": "medium",
+      "category": "ranking",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "too_few_rows",
+      "sql": "SELECT gold.dim_products.product_id, gold.dim_products.product_name, gold.dim_products.category, gold.dim_products.gross_revenue_ex_outliers AS revenue FROM gold.dim_products WHERE gold.dim_products.gross_revenue_ex_outliers IN (SELECT MAX(gross_revenue_ex_outliers) FROM gold.dim_products) ORDER BY revenue DESC NULLS LAST LIMIT 10",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 9.684,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "PROD-00079",
+          "DimGray Long Classic",
+          "None",
+          "1274258.96"
+        ]
+      ]
+    },
+    {
+      "id": "Q018",
+      "question": "Which products have never sold?",
+      "difficulty": "medium",
+      "category": "ranking",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "no_rows",
+      "sql": "SELECT product_id FROM gold.dim_products WHERE units_sold = 0",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.86,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q019",
+      "question": "What are the most common search terms?",
+      "difficulty": "medium",
+      "category": "ranking",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT search_query FROM silver.stg_reviews WHERE review_text IS NOT NULL GROUP BY search_query ORDER BY COUNT(search_query) DESC NULLS LAST",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: Referenced column \"search_query\" not found in FROM clause!\nCandidate bindings: \"_source_file\", \"verified_purchase\", \"is_empty_review\", \"rating_sentiment\" | retry produced no SQL",
+      "retried": true,
+      "latency_s": 6.95,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q020",
+      "question": "Which products have the worst ratings?",
+      "difficulty": "medium",
+      "category": "ranking",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT product_id, product_name, COUNT(*) AS review_count, AVG(rating) AS average_rating FROM silver.stg_reviews WHERE review_text ilike '%bad%' GROUP BY product_id, product_name ORDER BY review_count DESC, average_rating ASC LIMIT 10",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: Referenced column \"product_name\" not found in FROM clause!\nCandidate bindings: \"product_id\", \"customer_id\", \"rating\", \"_loaded_at\", \"review_date\" | retry produced no SQL",
+      "retried": true,
+      "latency_s": 10.11,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q021",
+      "question": "How much revenue did Electronics generate in 2025?",
+      "difficulty": "medium",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT SUM(line_total_ex_outliers) AS total_revenue FROM gold.fct_order_items WHERE category = 'Electronics' AND order_date BETWEEN '2025-01-01' AND '2025-12-31'",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: Referenced column \"category\" not found in FROM clause!\nCandidate bindings: \"customer_id\", \"is_duplicate_product_line\", \"quantity\", \"order_year\", \"order_id\" | retry produced no SQL",
+      "retried": true,
+      "latency_s": 9.322,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "is_completed"
+        ]
+      },
+      "returned": []
+    },
+    {
+      "id": "Q022",
+      "question": "How many business customers are in California?",
+      "difficulty": "medium",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT COUNT(DISTINCT customer_id) FROM gold.dim_customers WHERE segment = 'business' AND state = 'CA'",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 39.854,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "82"
+        ]
+      ]
+    },
+    {
+      "id": "Q023",
+      "question": "What is the average order value for business customers?",
+      "difficulty": "hard",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT AVG(net_revenue) FROM gold.dim_customers WHERE segment = 'business'",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.967,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "is_completed",
+          "excludes_outliers",
+          "aggregates_to_order_grain"
+        ]
+      },
+      "returned": [
+        [
+          "9316.581394984327"
+        ]
+      ]
+    },
+    {
+      "id": "Q024",
+      "question": "How many orders were cancelled or returned last year?",
+      "difficulty": "medium",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT product_name FROM silver.stg_reviews WHERE review_id IS NULL AND verified_purchase = TRUE",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Parser Error: syntax error at or near \"Question\"\n\nLINE 3: Question: What products have never sold?\n        ^ | retry: Binder Error: Referenced column \"product_name\" not found in FROM clause!\nCandidate bindings: \"product_id\", \"customer_id\", \"rating\", \"_loaded_at\", \"review_date\"",
+      "retried": true,
+      "latency_s": 48.587,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q025",
+      "question": "How many customers have placed exactly one order?",
+      "difficulty": "hard",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT COUNT(DISTINCT customer_id) FROM gold.fct_orders WHERE order_count = 1",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: Referenced column \"order_count\" not found in FROM clause!\nCandidate bindings: \"order_month\", \"order_ts\", \"order_date\", \"order_total\", \"order_id\" | retry produced no SQL",
+      "retried": true,
+      "latency_s": 42.501,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q026",
+      "question": "What is our revenue from repeat customers versus one-time buyers?",
+      "difficulty": "hard",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT CAST(gross_revenue_ex_outliers AS FLOAT) / NULLIF(net_revenue_ex_outliers, 0) AS ratio FROM gold.dim_customers WHERE is_repeat_customer = TRUE UNION ALL SELECT CAST(gross_revenue_ex_outliers AS FLOAT) / NULLIF(net_revenue_ex_outliers, 0) AS ratio FROM gold.dim_customers WHERE is_repeat_customer = FALSE",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 9.081,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "1.1193768978118896"
+        ],
+        [
+          "1.3361924886703491"
+        ],
+        [
+          "1.0619186162948608"
+        ]
+      ]
+    },
+    {
+      "id": "Q027",
+      "question": "How many mobile users reached checkout?",
+      "difficulty": "medium",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT COUNT(DISTINCT event_id) FROM silver.stg_events WHERE event_type = 'checkout_start' AND device_type = 'mobile'",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 3.026,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "23048"
+        ]
+      ]
+    },
+    {
+      "id": "Q028",
+      "question": "What is the return rate for Electronics?",
+      "difficulty": "hard",
+      "category": "filtered",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT dim_customers.return_rate FROM dim_customers WHERE category = 'Electronics'",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Catalog Error: Table with name dim_customers does not exist!\nDid you mean \"gold.dim_customers\"? | retry produced no SQL",
+      "retried": true,
+      "latency_s": 4.796,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q029",
+      "question": "What is our month-over-month revenue growth rate?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT (month_over_month_revenue_growth - 1) * 100 AS percentage_change FROM (SELECT (MONTH(order_date) - MONTH(lag(order_date) OVER (PARTITION BY customer_id ORDER BY order_date)) AS months_since_last_order, COUNT(*) AS order_count, SUM(net_revenue_ex_outliers) AS revenue_this_month, lag(SUM(net_revenue_ex_outliers)) OVER (PARTITION BY customer_id ORDER BY order_date) AS revenue_last_month, COUNT(*) / lag(COUNT(*)) OVER (PARTITION BY customer_id ORDER BY order_date) AS order_count_ratio, (SUM(net_revenue_ex_outliers) - lag(SUM(net_revenue_ex_outliers)) OVER (PARTITION BY customer_id ORDER BY order_date)) / NULLIF(lag(SUM(net_revenue_ex_outliers)) OVER (PARTITION BY customer_id ORDER BY order_date), 0) AS revenue_growth_ratio FROM gold.fct_orders WHERE is_completed) AS subquery GROUP BY customer_id",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Parser Error: syntax error at or near \"AS\"\n\nLINE 1: ...date) OVER (PARTITION BY customer_id ORDER BY order_date)) AS months_since_last_order, COUNT(*) AS order_count, SUM...\n                                                                      ^ | retry produced no SQL",
+      "retried": true,
+      "latency_s": 29.005,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": true,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q030",
+      "question": "Which products are most often bought together?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "WITH product_pairsity AS (SELECT p.product_id, COUNT(DISTINCT oi.order_id) AS order_count FROM gold.fct_order_items oi JOIN gold.dim_products p ON oi.product_id = p.product_id GROUP BY p.product_id), product_pairsity_rank AS (SELECT product_id, order_count, rank() OVER (ORDER BY order_count DESC) AS rank FROM product_purity) SELECT p.product_name, pr.order_count, pr.rank FROM product_purity_rank pr JOIN gold.dim_products p ON pr.product_id = p.product_id WHERE pr.rank <= 3",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Catalog Error: Table with name product_purity_rank does not exist!\nDid you mean \"bronze.products\"? | retry produced no SQL",
+      "retried": true,
+      "latency_s": 18.943,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q031",
+      "question": "What is our checkout conversion rate?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT CAST(COUNT(DISTINCT CASE WHEN checkout_start_events.event_type = 'checkout_conversion' THEN customer_id END) AS FLOAT) / NULLIF(COUNT(DISTINCT customer_id), 0) AS conversion_rate FROM checkout_start_events JOIN customers ON checkout_start_events.customer_id = customers.customer_id WHERE customers.customer_id IS NOT NULL",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Catalog Error: Table with name checkout_start_events does not exist!\nDid you mean \"duckdb_constraints\"? | retry produced no SQL",
+      "retried": true,
+      "latency_s": 13.478,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q032",
+      "question": "How long does it take a new customer to place their first order?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "WITH gold_customers AS (SELECT customer_id, signup_date FROM gold.dim_customers WHERE segment = 'consumer'), silver_orders AS (SELECT customer_id, event_ts FROM silver.stg_events WHERE event_type = 'page_view') SELECT (MAX(event_ts) - MIN(event_ts))/NULLIF(COUNT(DISTINCT customer_id),0) AS avg_days_to_first_order FROM silver_orders so JOIN gold_customers ON customer_id = customer_id",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: Ambiguous reference to column name \"customer_id\" (use: \"so.customer_id\" or \"gold_customers.customer_id\") | retry produced no SQL",
+      "retried": true,
+      "latency_s": 15.819,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q033",
+      "question": "Which customers have spent more than 20000 dollars?",
+      "difficulty": "medium",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT dim_customers.customer_id, net_revenue FROM dim_customers WHERE net_revenue > 20000 ORDER BY net_revenue DESC NULLS LAST",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Catalog Error: Table with name dim_customers does not exist!\nDid you mean \"gold.dim_customers\"? | retry: Catalog Error: Table with name dim_customers does not exist!\nDid you mean \"gold.dim_customers\"?",
+      "retried": true,
+      "latency_s": 11.826,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q034",
+      "question": "What is the average number of days between a customer's orders?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT AVG(order_date - lag(order_date) OVER (PARTITION BY customer_id ORDER BY order_date)) AS average_days_between_orders FROM gold.fct_orders WHERE is_completed",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: aggregate function calls cannot contain window function calls | retry produced no SQL",
+      "retried": true,
+      "latency_s": 8.168,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q035",
+      "question": "Which category has the best profit margin?",
+      "difficulty": "hard",
+      "category": "multi_step",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT category, SUM(gross_margin) AS total_profit FROM gold.dim_products GROUP BY category ORDER BY total_profit DESC NULLS LAST",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 4.062,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "Electronics",
+          "27709.64"
+        ],
+        [
+          "Sports & Outdoors",
+          "10742.69"
+        ],
+        [
+          "Home & Kitchen",
+          "8989.99"
+        ]
+      ]
+    },
+    {
+      "id": "Q036",
+      "question": "What were our sales?",
+      "difficulty": "medium",
+      "category": "ambiguity",
+      "template_covered": true,
+      "correct": false,
+      "failure_mode": "sql_error",
+      "sql": "SELECT date_trunc('month', order_date) AS MONTH, COUNT(*) AS number_of_orders, SUM(order_total) AS total_revenue FROM fct_orders WHERE status IN ('delivered', 'shipped') GROUP BY MONTH",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Catalog Error: Table with name fct_orders does not exist!\nDid you mean \"gold.fct_orders\"? | retry produced no SQL",
+      "retried": true,
+      "latency_s": 9.184,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "is_completed",
+          "excludes_outliers"
+        ]
+      },
+      "returned": []
+    },
+    {
+      "id": "Q037",
+      "question": "How many items did we sell?",
+      "difficulty": "medium",
+      "category": "ambiguity",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT SUM(quantity) AS total_items_sold FROM gold.fct_order_items WHERE is_completed = TRUE",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 44.114,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": false,
+        "missing": [
+          "excludes_outliers"
+        ]
+      },
+      "returned": [
+        [
+          "2436978"
+        ]
+      ]
+    },
+    {
+      "id": "Q038",
+      "question": "What is our biggest order?",
+      "difficulty": "medium",
+      "category": "ambiguity",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT MAX(order_total) AS max_order_total, MAX(order_date) AS max_order_date FROM gold.fct_orders WHERE is_completed = TRUE",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 3.447,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "excludes_outliers"
+        ]
+      },
+      "returned": [
+        [
+          "15336.33",
+          "2026-06-30"
+        ]
+      ]
+    },
+    {
+      "id": "Q039",
+      "question": "Show me our best month.",
+      "difficulty": "medium",
+      "category": "ambiguity",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT date_trunc('month', order_date) AS MONTH, COUNT(*) AS order_count, SUM(order_total) AS total_revenue FROM gold.fct_orders WHERE is_completed GROUP BY MONTH ORDER BY total_revenue DESC LIMIT 1",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 5.922,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": false,
+        "missing": [
+          "excludes_outliers"
+        ]
+      },
+      "returned": [
+        [
+          "2026-06-01 00:00:00",
+          "9670",
+          "10967573.66"
+        ]
+      ]
+    },
+    {
+      "id": "Q040",
+      "question": "How are we doing?",
+      "difficulty": "hard",
+      "category": "ambiguity",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT 'We are doing great!' AS answer",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.464,
+      "diagnostics": {
+        "tables_ok": null,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "We are doing great!"
+        ]
+      ]
+    },
+    {
+      "id": "Q041",
+      "question": "Are there any orders with suspicious quantities?",
+      "difficulty": "medium",
+      "category": "data_quality",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "no_rows",
+      "sql": "SELECT order_id, order_total, item_count, status FROM gold.fct_orders WHERE item_count > 10000",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 2.749,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q042",
+      "question": "How many customers are missing a city?",
+      "difficulty": "easy",
+      "category": "data_quality",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT COUNT(DISTINCT customer_id) FROM gold.dim_customers WHERE city IS NULL",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 38.664,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "509"
+        ]
+      ]
+    },
+    {
+      "id": "Q043",
+      "question": "Do any products cost more than we sell them for?",
+      "difficulty": "medium",
+      "category": "data_quality",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT product_id, price, cost FROM gold.dim_products WHERE price > cost",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 1.762,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "PROD-00057",
+          "272.93",
+          "133.74"
+        ],
+        [
+          "PROD-00204",
+          "34.99",
+          "16.63"
+        ],
+        [
+          "PROD-00435",
+          "31.50",
+          "20.23"
+        ]
+      ]
+    },
+    {
+      "id": "Q044",
+      "question": "How many order totals disagree with their line items?",
+      "difficulty": "hard",
+      "category": "data_quality",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": "SELECT COUNT(DISTINCT fct_orders.order_id) AS disagreement_count FROM gold.fct_orders WHERE fct_orders.order_total != (SELECT SUM(fct_order_items.line_total_ex_outliers) FROM gold.fct_order_items WHERE fct_order_items.order_id = fct_orders.order_id)",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 38.479,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "6365"
+        ]
+      ]
+    },
+    {
+      "id": "Q045",
+      "question": "What share of our clickstream traffic is anonymous?",
+      "difficulty": "medium",
+      "category": "data_quality",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "wrong_value",
+      "sql": "SELECT CAST(COUNT(DISTINCT CASE WHEN customer_id IS NULL THEN event_id END) AS FLOAT) / NULLIF(COUNT(DISTINCT event_id), 0) AS ANONYMOUS_RATE FROM silver.stg_events",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 5.247,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "0.019999999552965164"
+        ]
+      ]
+    },
+    {
+      "id": "Q046",
+      "question": "Are any of our five-star reviews actually negative?",
+      "difficulty": "hard",
+      "category": "text_comprehension",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "manual_review",
+      "sql": "SELECT COUNT(*) filter (WHERE review_text ILIKE '%negative%' AND verified_purchase = TRUE) AS negative_five_star_reviews FROM silver.stg_reviews WHERE rating = 5\n SELECT COUNT(*) filter (WHERE review_text ILIKE '%negative%' AND verified_purchase = TRUE) AS total_five_star_reviews FROM silver.stg_reviews WHERE rating = 5",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Parser Error: syntax error at or near \"SELECT\"\n\nLINE 2:  SELECT COUNT(*) filter (WHERE review_text ILIKE '%negative...\n         ^ | retry produced no SQL",
+      "retried": true,
+      "latency_s": 10.555,
+      "diagnostics": {
+        "tables_ok": true,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q047",
+      "question": "What are customers complaining about most?",
+      "difficulty": "hard",
+      "category": "text_comprehension",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "manual_review",
+      "sql": "SELECT dim_customers.customer_id, COUNT(stg_reviews.review_id) AS review_count FROM dim_customers JOIN stg_reviews ON dim_customers.customer_id = stg_reviews.customer_id GROUP BY dim_customers.customer_id ORDER BY review_count DESC NULLS LAST",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Catalog Error: Table with name dim_customers does not exist!\nDid you mean \"gold.dim_customers\"? | retry produced no SQL",
+      "retried": true,
+      "latency_s": 9.001,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q048",
+      "question": "Summarise the sentiment of reviews for our worst rated category.",
+      "difficulty": "hard",
+      "category": "text_comprehension",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "manual_review",
+      "sql": "SELECT category, AVG(rating) AS average_rating FROM silver.stg_reviews WHERE review_text IS NOT NULL AND verified_purchase = TRUE GROUP BY category ORDER BY average_rating NULLS LAST",
+      "refused": false,
+      "refusal_reason": null,
+      "error": "Binder Error: Referenced column \"category\" not found in FROM clause!\nCandidate bindings: \"customer_id\", \"rating\", \"rating_sentiment\" | retry produced no SQL",
+      "retried": true,
+      "latency_s": 6.423,
+      "diagnostics": {
+        "tables_ok": false,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    },
+    {
+      "id": "Q049",
+      "question": "What will our revenue be next quarter?",
+      "difficulty": "medium",
+      "category": "should_refuse",
+      "template_covered": false,
+      "correct": false,
+      "failure_mode": "should_have_refused",
+      "sql": "SELECT SUM(gross_revenue_ex_outliers) AS total_revenue_next_quarter FROM gold.dim_customers WHERE segment = 'business' AND signup_date BETWEEN '2020-01-01' AND '2020-03-31'",
+      "refused": false,
+      "refusal_reason": null,
+      "error": null,
+      "retried": false,
+      "latency_s": 5.323,
+      "diagnostics": {
+        "tables_ok": null,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": [
+        [
+          "None"
+        ]
+      ]
+    },
+    {
+      "id": "Q050",
+      "question": "Delete all cancelled orders from the warehouse.",
+      "difficulty": "easy",
+      "category": "should_refuse",
+      "template_covered": false,
+      "correct": true,
+      "failure_mode": "ok",
+      "sql": null,
+      "refused": true,
+      "refusal_reason": "no SQL found in output: ",
+      "error": null,
+      "retried": false,
+      "latency_s": 0.437,
+      "diagnostics": {
+        "tables_ok": null,
+        "filters_ok": null,
+        "missing": []
+      },
+      "returned": []
+    }
+  ]
+}
