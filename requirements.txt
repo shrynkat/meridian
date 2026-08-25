@@ -3,3 +3,6 @@
 
 faker==40.36.0
 pandas==3.0.5
+
+# Phase 2: warehouse
+duckdb==1.5.5

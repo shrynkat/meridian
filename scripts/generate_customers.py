@@ -59,10 +59,10 @@ def inject_defects(rows: list[dict]) -> None:
     for idx in random.sample(range(n), int(n * DEFECT_RATES["customer_missing_email"])):
         rows[idx]["email"] = None
 
-    # Empty-string cities: "missing" represented a second, different way.
-    # Real source systems are rarely consistent about which one they use.
+    # Placeholder cities: "missing" written as a literal string. Not null,
+    # not empty — it looks like real data to every automated null check.
     for idx in random.sample(range(n), int(n * DEFECT_RATES["customer_missing_city"])):
-        rows[idx]["city"] = ""
+        rows[idx]["city"] = "N/A"
 
     # Mixed date formats: ISO for most rows, US-style for some.
     for idx in random.sample(range(n), int(n * DEFECT_RATES["customer_date_format"])):
@@ -103,7 +103,7 @@ def main() -> None:
 
     print(f"wrote {len(frame):,} rows to {out_path}")
     print(f"  null emails:     {frame['email'].isna().sum():,}")
-    print(f"  empty cities:    {(frame['city'] == '').sum():,}")
+    print(f"  N/A cities:      {(frame['city'] == 'N/A').sum():,}")
     print(f"  non-ISO dates:   {frame['signup_date'].str.contains('/').sum():,}")
     print(f"  segment values:  {sorted(frame['segment'].unique())}")
 
