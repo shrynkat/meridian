@@ -1,0 +1,186 @@
+version: 2
+
+models:
+
+  - name: stg_customers
+    description: >
+      Customers cleaned and conformed. Signup dates parsed from two source
+      formats, emails normalised, 'N/A' city placeholders converted to true
+      nulls, segment casing collapsed.
+    columns:
+      - name: customer_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+
+      - name: signup_date
+        description: >
+          Parsed from ISO or US format. Never null in silver — rows that
+          parse under neither format go to quarantine.
+        tests:
+          - not_null
+
+      - name: segment
+        description: Customer type, lowercased.
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['consumer', 'business']
+
+      - name: email
+        description: >
+          Lowercased and trimmed. Nullable — 3% of source rows have no
+          email, which is expected rather than an error.
+
+  - name: stg_products
+    description: >
+      Product catalog. Categories trimmed of padding, negative prices
+      quarantined, margin violations flagged but retained.
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+
+      - name: price
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                inclusive: true
+
+      - name: is_margin_violation
+        description: >
+          Cost exceeds price. Every field is individually valid; only
+          domain knowledge identifies the row as wrong.
+
+  - name: stg_orders
+    description: >
+      Order headers. GRAIN - one row per order_id. Summing order_total here
+      gives order revenue. Do NOT sum it after joining to line items.
+    columns:
+      - name: order_id
+        description: Primary key. Duplicates from bronze are deduplicated here.
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: Foreign key to stg_customers. Orphans are quarantined.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['delivered', 'shipped', 'processing', 'cancelled', 'returned']
+
+      - name: order_ts
+        tests:
+          - not_null
+
+      - name: is_total_mismatched
+        description: >
+          Header order_total disagrees with the sum of its line items.
+          Expected on ~6% of orders because defect injection modified line
+          quantities without recomputing headers. Warned on, not errored.
+
+  - name: stg_order_items
+    description: >
+      Order line items. GRAIN - one row per order_item_id. An order appears
+      once per product. (order_id, product_id) is NOT unique.
+    columns:
+      - name: order_item_id
+        description: >
+          Primary key. This test is the one that catches join fan-out — the
+          bug where a duplicate key in a joined table silently multiplied
+          rows.
+        tests:
+          - unique
+          - not_null
+
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              config:
+                severity: warn
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+                # Warn rather than error: line items can reference orders
+                # whose headers were quarantined for an orphan customer_id.
+                # That is a known consequence of our own rejection rules.
+
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+
+      - name: quantity
+        tests:
+          - not_null
+
+  - name: stg_reviews
+    columns:
+      - name: review_id
+        tests:
+          - unique
+          - not_null
+
+      - name: rating
+        description: 1-5. Out-of-range values are quarantined.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+
+      - name: rating_sentiment
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['positive', 'neutral', 'negative']
+
+  - name: stg_events
+    description: >
+      Clickstream events with nested JSON properties flattened. A null
+      customer_id here is anonymous traffic, not an error.
+    columns:
+      - name: event_id
+        tests:
+          - unique
+          - not_null
+
+      - name: event_type
+        tests:
+          - accepted_values:
+              arguments:
+                values:
+                - page_view
+                - product_view
+                - add_to_cart
+                - remove_from_cart
+                - checkout_start
+                - search
+
+      - name: event_ts
+        tests:
+          - not_null
+
+      - name: device_type
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['mobile', 'desktop', 'tablet']
