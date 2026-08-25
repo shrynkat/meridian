@@ -29,6 +29,9 @@ from pathlib import Path
 import duckdb
 import yaml
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from guardrails import Guardrail  # noqa: E402
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = PROJECT_ROOT / "meridian.duckdb"
 SEMANTIC_PATH = PROJECT_ROOT / "semantic" / "semantic_layer.yml"
@@ -269,10 +272,12 @@ def run(
     question: str,
     con: duckdb.DuckDBPyConnection,
     schema_context: str,
+    guard: Guardrail | None = None,
     model: str = DEFAULT_MODEL,
     allow_retry: bool = True,
 ) -> LLMResult:
     started = time.perf_counter()
+    guard = guard or Guardrail()
     result = LLMResult(question=question, model=model)
 
     prompt = SYSTEM_PROMPT.format(schema=schema_context) + f"\n\nQuestion: {question}\nSQL:"
@@ -293,13 +298,47 @@ def run(
         result.latency_s = time.perf_counter() - started
         return result
 
-    forbidden = check_forbidden(sql)
-    if forbidden:
+    verdict = guard.check(sql, question)
+    if not verdict.allowed:
         result.sql = sql
-        result.refused = True
-        result.refusal_reason = forbidden
-        result.latency_s = time.perf_counter() - started
-        return result
+        # A structural or semantic block is not a refusal — it is a
+        # correctable error. Route it through the retry path with the
+        # guardrail's hint, which names the exact fix.
+        if allow_retry and verdict.retry_hint:
+            first_error = verdict.blocked_reason
+            result.retried = True
+            retry_prompt = (
+                SYSTEM_PROMPT.format(schema=schema_context)
+                + f"\n\nQuestion: {question}\n\n"
+                + RETRY_PROMPT.format(error=first_error + " " + verdict.retry_hint, sql=sql)
+                + "\nSQL:"
+            )
+            try:
+                raw2 = call_ollama(retry_prompt, model)
+            except RuntimeError as exc2:
+                result.error = f"{first_error} | retry failed: {exc2}"
+                result.latency_s = time.perf_counter() - started
+                return result
+
+            result.raw_output = raw + "\n---RETRY---\n" + raw2
+            sql2, refusal2 = extract_sql(raw2)
+            if refusal2 or sql2 is None:
+                result.error = f"{first_error} | retry produced no SQL"
+                result.latency_s = time.perf_counter() - started
+                return result
+
+            verdict2 = guard.check(sql2, question)
+            if not verdict2.allowed:
+                result.sql = sql2
+                result.error = f"blocked after retry: {verdict2.blocked_reason}"
+                result.latency_s = time.perf_counter() - started
+                return result
+            sql = sql2
+        else:
+            result.refused = True
+            result.refusal_reason = verdict.blocked_reason
+            result.latency_s = time.perf_counter() - started
+            return result
 
     result.sql = sql
 
