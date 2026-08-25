@@ -1,0 +1,23 @@
+name: meridian
+version: 1.0.0
+config-version: 2
+
+profile: meridian
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  meridian:
+    staging:
+      +materialized: view
+      +schema: silver
+    marts:
+      +materialized: table
+      +schema: gold
+    quarantine:
+      +materialized: table
+      +schema: quarantine

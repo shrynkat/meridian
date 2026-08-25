@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: >
+      Raw data loaded verbatim from source files. Nothing is cleaned,
+      cast, or deduplicated here by design — bronze is the faithful
+      record of what the source systems sent.
+    schema: bronze
+    tables:
+      - name: customers
+      - name: products
+      - name: orders
+      - name: events
+      - name: reviews
