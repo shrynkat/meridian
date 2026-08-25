@@ -70,6 +70,18 @@ line_totals as (
 
 ),
 
+-- Lines as they arrived, before our own rejection rules ran. An order with
+-- no rows here never had line items: an upstream integration failure. An
+-- order with rows here but none in line_totals had all its lines
+-- quarantined, which is a consequence of our rules, not the source's fault.
+-- Conflating the two would misattribute the cause.
+source_lines as (
+
+    select distinct trim(order_id) as order_id
+    from {{ source('bronze', 'order_items') }}
+
+),
+
 validated as (
 
     select
@@ -88,7 +100,8 @@ validated as (
 
         -- Flags
         coalesce(o.order_ts::date < c.signup_date, false) as is_before_signup,
-        l.order_id is null                                as has_no_line_items,
+        s.order_id is null                                as has_no_source_items,
+        (s.order_id is not null and l.order_id is null)   as all_items_rejected,
         coalesce(
             abs(o.order_total - l.actual_line_total) > 0.01,
             false
@@ -101,7 +114,8 @@ validated as (
 
     from deduplicated o
     left join customers   c on o.customer_id = c.customer_id
-    left join line_totals l on o.order_id    = l.order_id
+    left join line_totals  l on o.order_id   = l.order_id
+    left join source_lines s on o.order_id   = s.order_id
 
 )
 
@@ -118,7 +132,8 @@ select
     shipping_method,
     shipping_cost,
     is_before_signup,
-    has_no_line_items,
+    has_no_source_items,
+    all_items_rejected,
     is_total_mismatched,
     _loaded_at,
     _source_file
