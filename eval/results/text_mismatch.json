@@ -1,0 +1,719 @@
+{
+  "task": "sentiment_mismatch",
+  "metrics": {
+    "reviewed": 200,
+    "true_positives": 12,
+    "false_positives": 14,
+    "false_negatives": 0,
+    "true_negatives": 174,
+    "precision": 0.4615,
+    "recall": 1.0,
+    "f1": 0.6316,
+    "actual_mismatches": 12,
+    "predicted_mismatches": 26,
+    "elapsed_s": 283.0,
+    "model": "qwen2.5-coder:7b"
+  },
+  "sample": [
+    {
+      "review_id": "REV-000070",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "My partner liked it so much I ordered another."
+    },
+    {
+      "review_id": "REV-000140",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for. ...still thinking about it."
+    },
+    {
+      "review_id": "REV-000205",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid."
+    },
+    {
+      "review_id": "REV-000284",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Sturdy, well made, and the colour matches the photos."
+    },
+    {
+      "review_id": "REV-000360",
+      "rating": 5,
+      "predicted": true,
+      "actual": true,
+      "text": "Wrong item sent, and returning it was a hassle."
+    },
+    {
+      "review_id": "REV-000432",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Quality is much better than the price suggests."
+    },
+    {
+      "review_id": "REV-000513",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for.\nEdit: support finally replied, bumping a star."
+    },
+    {
+      "review_id": "REV-000584",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for. ...still thinking about it."
+    },
+    {
+      "review_id": "REV-000647",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Quality is much better than the price suggests."
+    },
+    {
+      "review_id": "REV-000719",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-000780",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "My partner liked it so much I ordered another.  Would \"recommend\" to a friend."
+    },
+    {
+      "review_id": "REV-000856",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid."
+    },
+    {
+      "review_id": "REV-000926",
+      "rating": 5,
+      "predicted": true,
+      "actual": true,
+      "text": "Broke after a week. Very disappointed."
+    },
+    {
+      "review_id": "REV-000994",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Sturdy, well made, and the colour matches the photos.  Would \"recommend\" to a friend."
+    },
+    {
+      "review_id": "REV-001066",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before."
+    },
+    {
+      "review_id": "REV-001133",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-001202",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "My partner liked it so much I ordered another."
+    },
+    {
+      "review_id": "REV-001274",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Arrived two days early, no complaints at all."
+    },
+    {
+      "review_id": "REV-001342",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-001410",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Sturdy, well made, and the colour matches the photos."
+    },
+    {
+      "review_id": "REV-001483",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Quality is much better than the price suggests."
+    },
+    {
+      "review_id": "REV-001551",
+      "rating": 5,
+      "predicted": true,
+      "actual": false,
+      "text": "Quality is much better than the price suggests. Shipping was fast, packaging, however, was not."
+    },
+    {
+      "review_id": "REV-001619",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "My partner liked it so much I ordered another.\nEdit: support finally replied, bumping a star."
+    },
+    {
+      "review_id": "REV-001693",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "My partner liked it so much I ordered another."
+    },
+    {
+      "review_id": "REV-001767",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-001844",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Quality is much better than the price suggests. ...still thinking about it."
+    },
+    {
+      "review_id": "REV-001913",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid."
+    },
+    {
+      "review_id": "REV-001988",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "My partner liked it so much I ordered another."
+    },
+    {
+      "review_id": "REV-002062",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again."
+    },
+    {
+      "review_id": "REV-002132",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Arrived two days early, no complaints at all.\nEdit: support finally replied, bumping a star."
+    },
+    {
+      "review_id": "REV-002199",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again."
+    },
+    {
+      "review_id": "REV-002272",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before."
+    },
+    {
+      "review_id": "REV-002342",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-002432",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Quality is much better than the price suggests."
+    },
+    {
+      "review_id": "REV-002504",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before."
+    },
+    {
+      "review_id": "REV-002591",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again.  Would \"recommend\" to a friend."
+    },
+    {
+      "review_id": "REV-002677",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before."
+    },
+    {
+      "review_id": "REV-002747",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-002827",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before.  Would \"recommend\" to a friend."
+    },
+    {
+      "review_id": "REV-002899",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid."
+    },
+    {
+      "review_id": "REV-002965",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before."
+    },
+    {
+      "review_id": "REV-003042",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-003125",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again."
+    },
+    {
+      "review_id": "REV-003194",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again."
+    },
+    {
+      "review_id": "REV-003279",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid."
+    },
+    {
+      "review_id": "REV-003347",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid."
+    },
+    {
+      "review_id": "REV-003423",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "My partner liked it so much I ordered another."
+    },
+    {
+      "review_id": "REV-003496",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Sturdy, well made, and the colour matches the photos."
+    },
+    {
+      "review_id": "REV-003573",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Arrived two days early, no complaints at all."
+    },
+    {
+      "review_id": "REV-003643",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-003719",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before."
+    },
+    {
+      "review_id": "REV-003793",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again."
+    },
+    {
+      "review_id": "REV-003874",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Quality is much better than the price suggests."
+    },
+    {
+      "review_id": "REV-003947",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-004025",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again.  Would \"recommend\" to a friend."
+    },
+    {
+      "review_id": "REV-004111",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid."
+    },
+    {
+      "review_id": "REV-004192",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again.\nEdit: support finally replied, bumping a star."
+    },
+    {
+      "review_id": "REV-004260",
+      "rating": 5,
+      "predicted": true,
+      "actual": true,
+      "text": "Arrived damaged and support never replied."
+    },
+    {
+      "review_id": "REV-004328",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Sturdy, well made, and the colour matches the photos."
+    },
+    {
+      "review_id": "REV-004397",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again."
+    },
+    {
+      "review_id": "REV-004479",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid. 10/10 \ud83d\udc4d"
+    },
+    {
+      "review_id": "REV-004554",
+      "rating": 5,
+      "predicted": true,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again. Shipping was fast, packaging, however, was not."
+    },
+    {
+      "review_id": "REV-004628",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before."
+    },
+    {
+      "review_id": "REV-004692",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again."
+    },
+    {
+      "review_id": "REV-004757",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-004822",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-004898",
+      "rating": 5,
+      "predicted": true,
+      "actual": false,
+      "text": "Exactly what I was looking for. Shipping was fast, packaging, however, was not."
+    },
+    {
+      "review_id": "REV-004967",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Arrived two days early, no complaints at all.  Would \"recommend\" to a friend."
+    },
+    {
+      "review_id": "REV-005045",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-005109",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Sturdy, well made, and the colour matches the photos."
+    },
+    {
+      "review_id": "REV-005181",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid.  Would \"recommend\" to a friend."
+    },
+    {
+      "review_id": "REV-005252",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "My partner liked it so much I ordered another. 10/10 \ud83d\udc4d"
+    },
+    {
+      "review_id": "REV-005331",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Sturdy, well made, and the colour matches the photos. ...still thinking about it."
+    },
+    {
+      "review_id": "REV-005421",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before.  Would \"recommend\" to a friend."
+    },
+    {
+      "review_id": "REV-005499",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-005568",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-005638",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again."
+    },
+    {
+      "review_id": "REV-005722",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Quality is much better than the price suggests."
+    },
+    {
+      "review_id": "REV-005796",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Exactly what I was looking for."
+    },
+    {
+      "review_id": "REV-005869",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before."
+    },
+    {
+      "review_id": "REV-005949",
+      "rating": 4,
+      "predicted": true,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before. Shipping was fast, packaging, however, was not."
+    },
+    {
+      "review_id": "REV-006021",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid."
+    },
+    {
+      "review_id": "REV-006097",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "My partner liked it so much I ordered another."
+    },
+    {
+      "review_id": "REV-006162",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "My partner liked it so much I ordered another."
+    },
+    {
+      "review_id": "REV-006240",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again."
+    },
+    {
+      "review_id": "REV-006308",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid."
+    },
+    {
+      "review_id": "REV-006380",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Quality is much better than the price suggests. ...still thinking about it."
+    },
+    {
+      "review_id": "REV-006449",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Quality is much better than the price suggests."
+    },
+    {
+      "review_id": "REV-006523",
+      "rating": 5,
+      "predicted": true,
+      "actual": true,
+      "text": "Arrived damaged and support never replied."
+    },
+    {
+      "review_id": "REV-006595",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Quality is much better than the price suggests."
+    },
+    {
+      "review_id": "REV-006655",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Works perfectly, packaging was solid."
+    },
+    {
+      "review_id": "REV-006723",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before."
+    },
+    {
+      "review_id": "REV-006799",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Sturdy, well made, and the colour matches the photos."
+    },
+    {
+      "review_id": "REV-006873",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before."
+    },
+    {
+      "review_id": "REV-006949",
+      "rating": 5,
+      "predicted": false,
+      "actual": false,
+      "text": "Arrived two days early, no complaints at all."
+    },
+    {
+      "review_id": "REV-007021",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "My partner liked it so much I ordered another. 10/10 \ud83d\udc4d"
+    },
+    {
+      "review_id": "REV-007097",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Sturdy, well made, and the colour matches the photos."
+    },
+    {
+      "review_id": "REV-007176",
+      "rating": 4,
+      "predicted": false,
+      "actual": false,
+      "text": "Second one I've bought. Would buy again."
+    },
+    {
+      "review_id": "REV-007248",
+      "rating": 5,
+      "predicted": true,
+      "actual": false,
+      "text": "Quality is much better than the price suggests. ...still thinking about it."
+    },
+    {
+      "review_id": "REV-007321",
+      "rating": 5,
+      "predicted": true,
+      "actual": false,
+      "text": "Honestly better than the more expensive brand I had before. Shipping was fast, packaging, however, was not."
+    }
+  ]
+}
