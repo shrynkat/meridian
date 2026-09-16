@@ -2,7 +2,7 @@
   "label": "llm agent [qwen2.5-coder:7b]",
   "agent": "llm",
   "model": "qwen2.5-coder:7b",
-  "run_at": "2026-08-25T12:36:40.997998+00:00",
+  "run_at": "2026-09-16T18:10:07.685055+00:00",
   "question_count": 50,
   "results": [
     {
@@ -18,7 +18,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 27.7,
+      "latency_s": 2.578,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": true,
@@ -43,7 +43,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.851,
+      "latency_s": 2.026,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -68,7 +68,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.503,
+      "latency_s": 1.832,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -93,7 +93,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 0.748,
+      "latency_s": 0.902,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -118,7 +118,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.877,
+      "latency_s": 2.337,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": true,
@@ -143,7 +143,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.876,
+      "latency_s": 2.245,
       "diagnostics": {
         "tables_ok": false,
         "filters_ok": false,
@@ -171,7 +171,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.193,
+      "latency_s": 1.133,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -196,7 +196,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.038,
+      "latency_s": 0.967,
       "diagnostics": {
         "tables_ok": false,
         "filters_ok": null,
@@ -221,7 +221,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 3.784,
+      "latency_s": 5.054,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": false,
@@ -249,7 +249,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 3.417,
+      "latency_s": 4.394,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": true,
@@ -283,7 +283,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 2.579,
+      "latency_s": 3.392,
       "diagnostics": {
         "tables_ok": false,
         "filters_ok": false,
@@ -315,7 +315,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.786,
+      "latency_s": 2.196,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -323,16 +323,16 @@
       },
       "returned": [
         [
+          "delivered",
+          "69529"
+        ],
+        [
           "cancelled",
           "9885"
         ],
         [
           "processing",
           "5049"
-        ],
-        [
-          "returned",
-          "5063"
         ]
       ]
     },
@@ -349,7 +349,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 3.365,
+      "latency_s": 4.673,
       "diagnostics": {
         "tables_ok": false,
         "filters_ok": false,
@@ -377,7 +377,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 2.926,
+      "latency_s": 3.648,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -402,7 +402,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 2.189,
+      "latency_s": 3.317,
       "diagnostics": {
         "tables_ok": false,
         "filters_ok": null,
@@ -428,7 +428,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 2.889,
+      "latency_s": 3.539,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -462,7 +462,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 3.358,
+      "latency_s": 4.539,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -499,7 +499,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.358,
+      "latency_s": 1.372,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -520,7 +520,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 2.021,
+      "latency_s": 2.563,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -551,7 +551,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 2.04,
+      "latency_s": 2.235,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -588,7 +588,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 5.641,
+      "latency_s": 6.941,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": true,
@@ -613,7 +613,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.813,
+      "latency_s": 2.117,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -638,7 +638,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 3.502,
+      "latency_s": 3.947,
       "diagnostics": {
         "tables_ok": false,
         "filters_ok": false,
@@ -667,7 +667,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 4.104,
+      "latency_s": 4.793,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -692,7 +692,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.393,
+      "latency_s": 1.46,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -717,7 +717,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": true,
-      "latency_s": 10.496,
+      "latency_s": 13.304,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -743,7 +743,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 2.155,
+      "latency_s": 2.472,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -768,7 +768,7 @@
       "refusal_reason": "CANNOT_ANSWER: The return rate cannot be calculated for the Electronics category based on the provided tables.",
       "error": null,
       "retried": false,
-      "latency_s": 1.551,
+      "latency_s": 1.95,
       "diagnostics": {
         "tables_ok": null,
         "filters_ok": null,
@@ -789,7 +789,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 4.932,
+      "latency_s": 6.247,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": true,
@@ -826,7 +826,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 8.605,
+      "latency_s": 10.252,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -844,8 +844,8 @@
           "11"
         ],
         [
-          "Red Letter Pro",
-          "LawnGreen Rock Plus",
+          "MediumBlue Middle Lite",
+          "DimGray Store Pro",
           "10"
         ]
       ]
@@ -863,7 +863,7 @@
       "refusal_reason": "CANNOT_ANSWER: The checkout conversion rate requires data from the clickstream events table, which is not included in the provided schema.",
       "error": null,
       "retried": false,
-      "latency_s": 2.118,
+      "latency_s": 2.309,
       "diagnostics": {
         "tables_ok": null,
         "filters_ok": null,
@@ -884,7 +884,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 3.753,
+      "latency_s": 4.306,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -909,7 +909,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.846,
+      "latency_s": 1.956,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -940,7 +940,7 @@
       "refusal_reason": null,
       "error": "Binder Error: aggregate function calls cannot contain window function calls | retry: Binder Error: aggregate function calls cannot contain window function calls",
       "retried": true,
-      "latency_s": 7.484,
+      "latency_s": 9.271,
       "diagnostics": {
         "tables_ok": false,
         "filters_ok": null,
@@ -961,7 +961,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 4.582,
+      "latency_s": 2.696,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -987,7 +987,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.528,
+      "latency_s": 1.84,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": true,
@@ -1012,7 +1012,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.94,
+      "latency_s": 2.333,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": true,
@@ -1037,7 +1037,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.77,
+      "latency_s": 2.026,
       "diagnostics": {
         "tables_ok": false,
         "filters_ok": false,
@@ -1065,7 +1065,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": true,
-      "latency_s": 8.333,
+      "latency_s": 10.251,
       "diagnostics": {
         "tables_ok": false,
         "filters_ok": false,
@@ -1093,7 +1093,7 @@
       "refusal_reason": "CANNOT_ANSWER: The question is ambiguous and does not specify which measure or grain to use. Please provide more details.",
       "error": null,
       "retried": false,
-      "latency_s": 2.359,
+      "latency_s": 2.101,
       "diagnostics": {
         "tables_ok": null,
         "filters_ok": null,
@@ -1114,7 +1114,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.797,
+      "latency_s": 1.998,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -1151,7 +1151,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.155,
+      "latency_s": 1.244,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -1176,7 +1176,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.937,
+      "latency_s": 2.288,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -1216,7 +1216,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 1.817,
+      "latency_s": 2.038,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -1241,7 +1241,7 @@
       "refusal_reason": null,
       "error": null,
       "retried": false,
-      "latency_s": 3.739,
+      "latency_s": 4.167,
       "diagnostics": {
         "tables_ok": true,
         "filters_ok": null,
@@ -1266,7 +1266,7 @@
       "refusal_reason": "CANNOT_ANSWER: The data does not provide enough information to determine if any five-star reviews are actually negative.",
       "error": null,
       "retried": false,
-      "latency_s": 2.021,
+      "latency_s": 1.994,
       "diagnostics": {
         "tables_ok": null,
         "filters_ok": null,
@@ -1287,7 +1287,7 @@
       "refusal_reason": "CANNOT_ANSWER: The question asks about customer complaints, but the provided tables do not include any data related to customer feedback or complaints.",
       "error": null,
       "retried": false,
-      "latency_s": 2.473,
+      "latency_s": 2.564,
       "diagnostics": {
         "tables_ok": null,
         "filters_ok": null,
@@ -1308,7 +1308,7 @@
       "refusal_reason": "CANNOT_ANSWER: The question asks for the sentiment of reviews for the worst-rated category, but the provided schema does not include any text data or sentiment analysis capabilities. The `silver.stg_reviews` table only contains numerical ratings and free-text reviews, but it does not provide any information about the sentiment of the reviews.",
       "error": null,
       "retried": false,
-      "latency_s": 5.503,
+      "latency_s": 5.85,
       "diagnostics": {
         "tables_ok": null,
         "filters_ok": null,
@@ -1329,7 +1329,7 @@
       "refusal_reason": "CANNOT_ANSWER: The question asks for future revenue, but the provided tables only contain historical data.",
       "error": null,
       "retried": false,
-      "latency_s": 1.938,
+      "latency_s": 2.4,
       "diagnostics": {
         "tables_ok": null,
         "filters_ok": null,
@@ -1350,7 +1350,7 @@
       "refusal_reason": "REFUSED: this agent is read-only",
       "error": null,
       "retried": false,
-      "latency_s": 0.988,
+      "latency_s": 1.504,
       "diagnostics": {
         "tables_ok": null,
         "filters_ok": null,
