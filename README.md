@@ -1,5 +1,7 @@
 # Meridian
 
+![pipeline](https://github.com/shrynkat/meridian/actions/workflows/pipeline.yml/badge.svg)
+
 A local analytics warehouse you can ask questions in English, and a record of
 how often it answers correctly.
 
@@ -231,6 +233,25 @@ app/         Streamlit console
 Streamlit · pandas · Faker
 
 ---
+
+## Continuous integration
+
+Every push rebuilds the warehouse from nothing on a clean Ubuntu runner:
+generate the source data, load bronze, run 15 dbt models and 50 tests, verify
+that gold plus quarantine reconciles exactly against source at both grains,
+check the guardrail's six cases, and run the template benchmark. Around 80
+seconds.
+
+Its first run failed, usefully. `dbt` was missing from `requirements.txt` — a
+pin that silently never got written four phases earlier, and which nothing
+caught because the local environment already had dbt installed directly. The
+repository was not reproducible and nobody would have known until someone
+cloned it.
+
+CI does not cover the LLM path; a free runner cannot host a 7B model. The
+warehouse, the tests, the guardrail's static checks and the template agent are
+verified on every commit. The LLM benchmark runs locally and its results are
+committed under `eval/results`.
 
 ## What this does not do
 
