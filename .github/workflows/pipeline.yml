@@ -49,6 +49,7 @@ jobs:
       - name: Build and test the warehouse
         working-directory: dbt
         run: |
+          dbt --version
           dbt deps
           dbt build
         # dbt build runs models and tests in dependency order and exits
