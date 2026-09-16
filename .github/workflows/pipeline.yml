@@ -1,0 +1,143 @@
+# Rebuilds the warehouse from nothing on every push and fails if any data
+# quality test errors.
+#
+# The claim this verifies is reproducibility. Running locally proves the
+# pipeline works on a machine that has been accumulating state for weeks;
+# running on a clean Ubuntu runner with no cache proves it works from a
+# git clone and a requirements file.
+#
+# WHAT THIS DOES NOT COVER: the LLM agent. GitHub's free runners cannot run
+# a 7B model, so the text-to-SQL path is untested here. CI verifies the
+# warehouse, the tests, the guardrail's static checks, and the template
+# agent's benchmark. The LLM benchmark is run locally and its results are
+# committed under eval/results.
+
+name: pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate source data
+        run: python scripts/generate_all.py
+
+      - name: Load bronze
+        run: python scripts/load_bronze.py
+
+      - name: Build and test the warehouse
+        working-directory: dbt
+        run: |
+          dbt deps
+          dbt build
+        # dbt build runs models and tests in dependency order and exits
+        # non-zero on any test with severity=error. Two tests are configured
+        # to warn -- 6,365 order headers whose totals disagree with their
+        # lines, and 1,131 line items referencing quarantined orders. Both
+        # are known properties of the seeded defects, both have a documented
+        # expected count, and neither should redden the build. A permanently
+        # failing suite trains people to ignore it.
+
+      - name: Verify reconciliation
+        run: |
+          python - <<'PY'
+          import duckdb, sys
+          con = duckdb.connect("meridian.duckdb", read_only=True)
+
+          def scalar(sql):
+              return con.execute(sql).fetchone()[0]
+
+          checks = []
+
+          orders_src = scalar("select count(distinct order_id) from bronze.orders")
+          orders_acct = (scalar("select count(*) from gold.fct_orders")
+                         + scalar("select count(*) from quarantine.rejected_orders"))
+          checks.append(("orders", orders_acct, orders_src))
+
+          items_src = scalar("select count(*) from bronze.order_items")
+          items_acct = (scalar("select count(*) from gold.fct_order_items")
+                        + scalar("select count(*) from quarantine.rejected_order_items")
+                        + scalar("select count(*) from quarantine.rejected_by_parent"))
+          checks.append(("line items", items_acct, items_src))
+
+          failed = False
+          for name, accounted, source in checks:
+              ok = accounted == source
+              print(f"{'PASS' if ok else 'FAIL'}  {name}: "
+                    f"{accounted:,} accounted for / {source:,} in source")
+              if not ok:
+                  failed = True
+
+          # Every row is either in gold or in quarantine with a reason. A row
+          # that vanishes silently is the failure mode the quarantine layer
+          # exists to prevent, so the build fails rather than warns.
+          con.close()
+          sys.exit(1 if failed else 0)
+          PY
+
+      - name: Run the baseline benchmark
+        run: python eval/run_eval.py --agent baseline
+
+      - name: Check the guardrail
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, "agent")
+          from guardrails import Guardrail
+
+          g = Guardrail()
+          cases = [
+              ("SELECT sum(line_total_ex_outliers) FROM gold.fct_order_items "
+               "WHERE is_completed", "total revenue", True),
+              ("SELECT sum(line_total) FROM gold.fct_order_items",
+               "total revenue", False),
+              ("SELECT sum(line_total) FROM gold.fct_order_items",
+               "gross revenue including outliers", True),
+              ("DELETE FROM gold.fct_orders", "delete orders", False),
+              ("SELECT order_count FROM gold.fct_orders", "how many", False),
+              ("SELECT * FROM some_other_table", "anything", False),
+          ]
+
+          failed = False
+          for sql, question, should_allow in cases:
+              verdict = g.check(sql, question)
+              ok = verdict.allowed == should_allow
+              print(f"{'PASS' if ok else 'FAIL'}  "
+                    f"{'allow' if should_allow else 'block'}: {sql[:58]}")
+              if not ok:
+                  failed = True
+                  print(f"      got: {verdict.blocked_reason or 'allowed'}")
+
+          sys.exit(1 if failed else 0)
+          PY
+
+      - name: Upload the warehouse
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: warehouse
+          path: |
+            meridian.duckdb
+            eval/results/baseline.json
+          retention-days: 7
